@@ -1,0 +1,26 @@
+{
+    "name": "solenoid/mysql",
+    "description": "MySQL client library",
+    "type": "library",
+    "keywords": ["mysql","client","sql","query","dbms","database"],
+    "homepage": "https://github.com/Solenoid-IT/php-mysql",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Pier Niccolò Giannelli",
+            "email": "pierniccologiannelli@gmail.com",
+            "homepage": "https://www.solenoid.it",
+            "role": "Full Stack Web Developer"
+        }
+    ],
+    "require": {
+        "php": ">=7.3",
+        "solenoid/vector": "^1.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Solenoid\\MySQL\\": "src",
+            "Solenoid\\Vector\\": "src"
+        }
+    }
+}
