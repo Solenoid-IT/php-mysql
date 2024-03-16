@@ -164,24 +164,24 @@ class Database
 
 
                                 // (Setting the value)
-                                $ref_rules = [];
+                                $rules = [];
 
                                 if ( $foreign_key_matches[7][$k] )
                                 {// Value found
                                     // (Appending the value)
-                                    $ref_rules[] = $foreign_key_matches[7][$k];
+                                    $rules[] = $foreign_key_matches[7][$k];
                                 }
 
                                 if ( $foreign_key_matches[10][$k] )
                                 {// Value found
                                     // (Appending the value)
-                                    $ref_rules[] = $foreign_key_matches[10][$k];
+                                    $rules[] = $foreign_key_matches[10][$k];
                                 }
 
 
 
                                 // (Appending the value)
-                                $foreign_keys[] = 'ahcid';
+                                $foreign_keys[] = ForeignKey::create( $key, Reference::create( $ref_database, $ref_table, $ref_key ), $rules );
                             }
                         }
 
@@ -190,7 +190,7 @@ class Database
                         // (Appending the value)
                         $entities[] = Entity::create
                         (
-                            $database->name,
+                            null,
                             $table,
                             $fields,
                             $primary_key,

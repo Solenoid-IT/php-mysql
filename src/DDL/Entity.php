@@ -26,7 +26,7 @@ class Entity
     {
         // (Getting the values)
         $this->database     = $database;
-        $this->$name        = $name;
+        $this->name         = $name;
 
         $this->fields       = $fields;
 
