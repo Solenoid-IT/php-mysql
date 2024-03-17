@@ -6,6 +6,10 @@ namespace Solenoid\MySQL;
 
 
 
+use \Solenoid\MySQL\Entity;
+
+
+
 class Connection
 {
     #const DEBUG_MODE = true;
@@ -825,6 +829,15 @@ class Connection
 
         // Returning the value
         return $this;
+    }
+
+
+
+    # Returns [Entity]
+    public function fetch_entity (string $database, string $table)
+    {
+        // Returning the value
+        return Entity::create( $this, $database, $table );
     }
 
 
