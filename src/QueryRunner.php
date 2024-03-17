@@ -1443,6 +1443,32 @@ class QueryRunner
         // Returning the value
         return $this;
     }
+
+
+
+    # Returns [self] | Throws [Exception]
+    public function filter (array $filters)
+    {
+        // (Getting the value)
+        $filters_length = count($filters);
+
+        for ($i = 0; $i < $filters_length; $i++)
+        {// Iterating each index
+            // (Composing the query runner)
+            $this->where_list( $filters[$i] );
+
+            if ( $i < $filters_length - 1 )
+            {// Match OK
+                // (Composing the query runner)
+                $this->w_or();
+            }
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
 }
 
 
