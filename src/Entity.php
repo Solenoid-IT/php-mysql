@@ -141,7 +141,7 @@ class Entity
     # Returns [self|false] | Throws [Exception]
     public function change (array $filters, array $kv_data)
     {
-        if ( QueryRunner::create( $this->connection, $this->database, $this->table )->filter( $filters )->update( $kv_data ) )
+        if ( !QueryRunner::create( $this->connection, $this->database, $this->table )->filter( $filters )->update( $kv_data ) )
         {// (Unable to update the records)
             // (Setting the value)
             $message = "Unable to update the records :: " . $this->connection->get_error_text();
