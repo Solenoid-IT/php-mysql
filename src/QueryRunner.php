@@ -584,11 +584,11 @@ class QueryRunner
 
 
         // (Getting the value)
-        $cursor = QueryRunner::create( $this->connection, $this->database, $this->table, $this->auto_type )->where_list( $where_kv_data )->select();
+        $cursor = QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type( $this->auto_type )->where_list( $where_kv_data )->select();
 
         if ( $cursor->is_empty() )
         {// (Record not found)
-            if ( !QueryRunner::create( $this->connection, $this->database, $this->table, $this->auto_type )->capture( $this->query_debug )->insert( $kv_data, $raw_kv_data, $ignore_error ) )
+            if ( !QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type( $this->auto_type )->capture( $this->query_debug )->insert( $kv_data, $raw_kv_data, $ignore_error ) )
             {// (Unable to insert the record)
                 // (Setting the value)
                 $message = "Unable to insert the record :: " . $this->connection->get_error_text();
@@ -630,7 +630,7 @@ class QueryRunner
 
 
         // (Getting the value)
-        $cursor = QueryRunner::create( $this->connection, $this->database, $this->table, $this->auto_type )->where_list( $where_kv_data )->select();
+        $cursor = QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type( $this->auto_type )->where_list( $where_kv_data )->select();
 
 
 
