@@ -18,6 +18,10 @@ class Entity
 
 
 
+    private int       $lid;
+
+
+
     # Returns [Entity]
     public function __construct (Connection &$connection, string $database, string $table)
     {
@@ -36,9 +40,37 @@ class Entity
 
 
 
-    # Returns [self|false] | Throws [Exception]
-    public function register (array $records, bool $ignore_error = false, string &$id = null)
+    # Returns [assoc|false] | Throws [Exception]
+    public function list_columns ()
     {
+        if ( !$this->connection->execute( "SHOW FIELDS FROM `$this->database`.`$this->table`" ) )
+        {// (Unable to get the fields metadata)
+            // (Setting the value)
+            $message = "Unable to get the fields metadata :: " . $this->connection->get_error_text();
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return $this->connection->fetch_cursor()->to_array();
+    }
+
+
+
+    # Returns [self|false] | Throws [Exception]
+    public function register (array $records, bool $ignore_error = false)
+    {
+        // (Getting the value)
+        $this->lid = $this->connection->get_last_insert_id();
+
+
+
         // (Getting the value)
         $columns = implode( ',', array_map( function ($column) { return "`$column`"; }, array_keys( $records[0] ) ) );
 
@@ -79,34 +111,6 @@ class Entity
         {// (Unable to execute the query)
             // Returning the value
             return false;
-        }
-
-
-
-        if ( count($records) === 1 )
-        {// (There is a single record)
-            if ( !$this->connection->execute( "SHOW FIELDS FROM `$this->database`.`$this->table`" ) )
-            {// (Unable to get the fields metadata)
-                // (Setting the value)
-                $message = "Unable to get the fields metadata :: " . $this->connection->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
-            }
-
-
-
-            // (Getting the value)
-            $ai_fields = array_values( array_filter( $this->connection->fetch_cursor()->to_array(), function($field) { return stripos( $field['Extra'], 'auto_increment' ) !== false; },  ) );
-
-            if ( $ai_fields )
-            {// Value is not empty
-                // (Getting the value)
-                $id = $this->connection->get_last_insert_id();
-            }
         }
 
 
@@ -180,10 +184,47 @@ class Entity
     }
 
     # Returns [array<assoc>] | Throws [Exception]
-    public function list (array $filters = [])
+    public function list (array $filters = [], array $order = [], ?callable $transform_entry = null)
     {
+        // (Getting the value)
+        $qr = QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type()->set_column_separator()->filter( $filters );
+
+        if ( $order )
+        {// Value found
+            // (Composing the query runner)
+            $qr->order_by( $order );
+        }
+
+
+
         // Returning the value
-        return QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type()->set_column_separator()->filter( $filters )->order_by( [ 'id' => 'desc' ] )->select()->to_array();
+        return $qr->select()->to_array( $transform_entry );
+    }
+
+
+
+    # Returns [array<string>] | Throws [Exception]
+    public function fetch_ids ()
+    {
+        // (Getting the values)
+        $first = $this->lid + 1;
+        $last  = $this->connection->get_last_insert_id();
+
+
+
+        // (Setting the value)
+        $ids = [];
+
+        for ($i = $first; $i <= $last; $i++)
+        {// Iterating each index
+            // (Appending the value)
+            $ids[] = $i;
+        }
+
+
+
+        // Returning the value
+        return $ids;
     }
 
 
