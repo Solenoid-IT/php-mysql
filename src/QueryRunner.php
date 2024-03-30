@@ -70,81 +70,6 @@ class QueryRunner
                         return;
                     }
                 }
-
-                if ( $this->database && $this->table )
-                {// Values found
-                    if ( $this->auto_type )
-                    {// Value is true
-                        if ( !self::$schemas[ $this->database ][ $this->table ] )
-                        {// Value not found
-                            // (Getting the value)
-                            $query =
-                            "
-                                SHOW
-                                    COLUMNS
-                                FROM
-                                    `$this->database`.`$this->table`
-                                ;
-                            "
-                            ;
-
-                            if ( !$this->connection->execute( $query ) )
-                            {// (Unable to execute the query)
-                                // (Setting the value)
-                                $message = "Unable to execute the query to get the table schema :: " . $this->connection->get_error_text();
-
-                                // Throwing an exception
-                                throw new \Exception($message);
-
-                                // Returning the value
-                                return;
-                            }
-
-
-
-                            // (Getting the value)
-                            $columns = $this->connection->fetch_cursor()->to_array();
-
-                            foreach ($columns as $column)
-                            {// Processing each entry
-                                // (Getting the value)
-                                $column_type = preg_replace( '/\([^\)]+\)$/', '', $column['Type'] );
-
-                                switch ( $column_type )
-                                {
-                                    case 'tinyint':
-                                    case 'smallint':
-                                    case 'mediumint':
-                                    case 'int':
-                                    case 'bigint':
-                                        // (Setting the value)
-                                        $type = 'int';
-                                    break;
-
-                                    case 'decimal':
-                                    case 'float':
-                                    case 'double':
-                                    case 'real':
-                                        // (Setting the value)
-                                        $type = 'float';
-                                    break;
-
-                                    default:
-                                        // (Setting the value)
-                                        $type = 'string';
-                                }
-
-                                // (Getting the value)
-                                self::$schemas[ $this->database ][ $this->table ][ $column['Field'] ] =
-                                [
-                                    'type' => $type,
-                                    'null' => $column['Null'] !== 'NO'
-                                ]
-                                ;
-                            }
-                        }
-                    }
-                }
             }
         )
         ;
@@ -1280,6 +1205,82 @@ class QueryRunner
         {// Value is true
             // Returning the value
             return true;
+        }
+
+
+
+        if ( $this->auto_type )
+        {// Value is true
+            if ( !self::$schemas[ $this->database ][ $this->table ] )
+            {// Value not found
+                // (Getting the value)
+                $query =
+                "
+                    SHOW
+                        COLUMNS
+                    FROM
+                        `$this->database`.`$this->table`
+                    ;
+                "
+                ;
+
+                if ( !$this->connection->execute( $query ) )
+                {// (Unable to execute the query)
+                    // (Setting the value)
+                    $message = "Unable to execute the query to get the table schema :: " . $this->connection->get_error_text();
+
+                    // Throwing an exception
+                    throw new \Exception($message);
+
+                    // Returning the value
+                    return;
+                }
+
+
+
+                // (Getting the value)
+                $columns = $this->connection->fetch_cursor()->to_array();
+
+                foreach ($columns as $column)
+                {// Processing each entry
+                    // (Getting the value)
+                    $column_type = preg_replace( '/\([^\)]+\)$/', '', $column['Type'] );
+
+                    switch ( $column_type )
+                    {
+                        case 'tinyint':
+                        case 'smallint':
+                        case 'mediumint':
+                        case 'int':
+                        case 'bigint':
+                            // (Setting the value)
+                            $type = 'int';
+                        break;
+
+                        case 'decimal':
+                        case 'float':
+                        case 'double':
+                        case 'real':
+                            // (Setting the value)
+                            $type = 'float';
+                        break;
+
+                        default:
+                            // (Setting the value)
+                            $type = 'string';
+                    }
+
+
+
+                    // (Getting the value)
+                    self::$schemas[ $this->database ][ $this->table ][ $column['Field'] ] =
+                    [
+                        'type' => $type,
+                        'null' => $column['Null'] !== 'NO'
+                    ]
+                    ;
+                }
+            }
         }
 
 
