@@ -1142,73 +1142,6 @@ class QueryRunner
     # Returns [Cursor|bool] | Throws [Exception]
     public function select (array $columns = [], bool $unique = false, bool $raw_columns = false)
     {
-        // (Setting the value)
-        $projection_columns = [];
-
-        if ( $raw_columns )
-        {// (Values are not manipulated)
-            foreach ($columns as $entry)
-            {// Processing each entry
-                // (Appending the value)
-                $projection_columns[] = $entry;
-            }
-        }
-        else
-        {// (Values are manipulated)
-            if ( Vector::create( $columns )->is_sequential() )
-            {// (Array is sequential)
-                foreach ($columns as $column)
-                {// Processing each entry
-                    // (Getting the value)
-                    $column = str_replace( '`', '', $column );
-
-                    // (Appending the value)
-                    $projection_columns[] = "`$column`";
-                }
-            }
-            else
-            {// (Array is associative)
-                foreach ($columns as $column => $label)
-                {// Processing each entry
-                    // (Getting the values)
-                    $column = str_replace( '`', '', $column );
-                    $label  = str_replace( '`', '', $label );
-
-                    // (Appending the value)
-                    $projection_columns[] = "`$column` AS `$label`";
-                }
-            }
-        }
-
-
-
-        // (Building the query)
-        $query = $this->query_builder->build_select( $projection_columns, $unique );
-
-
-
-        if ( !$this->connection->execute( $query, [], $this->query_debug ) )
-        {// (Unable to execute the query)
-            // (Setting the value)
-            $message = "Unable to execute the query :: " . $this->connection->get_error_text();
-
-            // Throwing an exception
-            throw new \Exception($message);
-
-            // Returning the value
-            return false;
-        }
-
-
-
-        if ( $this->query_debug )
-        {// Value is true
-            // Returning the value
-            return true;
-        }
-
-
-
         if ( $this->auto_type )
         {// Value is true
             if ( !self::$schemas[ $this->database ][ $this->table ] )
@@ -1281,6 +1214,73 @@ class QueryRunner
                     ;
                 }
             }
+        }
+
+
+
+        // (Setting the value)
+        $projection_columns = [];
+
+        if ( $raw_columns )
+        {// (Values are not manipulated)
+            foreach ($columns as $entry)
+            {// Processing each entry
+                // (Appending the value)
+                $projection_columns[] = $entry;
+            }
+        }
+        else
+        {// (Values are manipulated)
+            if ( Vector::create( $columns )->is_sequential() )
+            {// (Array is sequential)
+                foreach ($columns as $column)
+                {// Processing each entry
+                    // (Getting the value)
+                    $column = str_replace( '`', '', $column );
+
+                    // (Appending the value)
+                    $projection_columns[] = "`$column`";
+                }
+            }
+            else
+            {// (Array is associative)
+                foreach ($columns as $column => $label)
+                {// Processing each entry
+                    // (Getting the values)
+                    $column = str_replace( '`', '', $column );
+                    $label  = str_replace( '`', '', $label );
+
+                    // (Appending the value)
+                    $projection_columns[] = "`$column` AS `$label`";
+                }
+            }
+        }
+
+
+
+        // (Building the query)
+        $query = $this->query_builder->build_select( $projection_columns, $unique );
+
+
+
+        if ( !$this->connection->execute( $query, [], $this->query_debug ) )
+        {// (Unable to execute the query)
+            // (Setting the value)
+            $message = "Unable to execute the query :: " . $this->connection->get_error_text();
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        if ( $this->query_debug )
+        {// Value is true
+            // Returning the value
+            return true;
         }
 
 
