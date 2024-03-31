@@ -1172,9 +1172,9 @@ class QueryRunner
 
 
                 // (Getting the value)
-                $columns = $this->connection->fetch_cursor()->to_array();
+                $table_columns = $this->connection->fetch_cursor()->to_array();
 
-                foreach ($columns as $column)
+                foreach ($table_columns as $column)
                 {// Processing each entry
                     // (Getting the value)
                     $column_type = preg_replace( '/\([^\)]+\)$/', '', $column['Type'] );
