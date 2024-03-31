@@ -531,7 +531,7 @@ class QueryRunner
             $n_kv_data = array_diff_assoc( $kv_data, $key_values['normalized'] );
             $r_kv_data = array_diff_assoc( $raw_kv_data, $key_values['raw'] );
 
-            if ( !QueryRunner::create( $this->connection, $this->database, $this->table, $this->auto_type )->capture( $this->query_debug )->where_list( $key_values['normalized'] + $key_values['raw'] )->update( $n_kv_data, $r_kv_data ) )
+            if ( !QueryRunner::create( $this->connection, $this->database, $this->table )->set_auto_type( $this->auto_type )->capture( $this->query_debug )->where_list( $key_values['normalized'] + $key_values['raw'] )->update( $n_kv_data, $r_kv_data ) )
             {// (Unable to update the record)
                 // (Setting the value)
                 $message = "Unable to update the record :: " . $this->connection->get_error_text();
