@@ -1198,6 +1198,12 @@ class QueryRunner
                             $type = 'float';
                         break;
 
+                        case 'timestamp':
+                        case 'datetime':
+                            // (Setting the value)
+                            $type = 'datetime';
+                        break;
+
                         default:
                             // (Setting the value)
                             $type = 'string';
@@ -1304,6 +1310,11 @@ class QueryRunner
             // Returning the value
             return false;
         }
+
+
+
+        // (Setting the connection)
+        $cursor->set_connection( $this->connection );
 
 
 

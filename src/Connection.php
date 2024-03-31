@@ -12,10 +12,6 @@ use \Solenoid\MySQL\Entity;
 
 class Connection
 {
-    #const DEBUG_MODE = true;
-
-
-
     private ?\mysqli $c;
 
 
@@ -40,6 +36,8 @@ class Connection
     private string   $insert_mode;
 
     private array    $event_listeners;
+
+    private string   $timezone_hms;
 
 
 
@@ -84,6 +82,8 @@ class Connection
         $this->insert_mode     = 'standard';
 
         $this->event_listeners = [];
+
+        $this->timezone_hms    = '';
     }
 
     # Returns [Connection]
@@ -174,6 +174,18 @@ class Connection
             // Returning the value
             return false;
         }
+
+
+
+        if ( $this->execute( 'SELECT TIMEDIFF( NOW(), UTC_TIMESTAMP );' ) === false )
+        {// (Unable to get the timezone HMS)
+            // Returning the value
+            return false;
+        }
+
+        // (Getting the value)
+        $this->timezone_hms = $this->fetch_cursor()->fetch_head();
+        $this->timezone_hms = $this->timezone_hms[0] === '-' ? $this->timezone_hms : '+' . $this->timezone_hms;
 
 
 
@@ -838,6 +850,15 @@ class Connection
     {
         // Returning the value
         return Entity::create( $this, $database, $table );
+    }
+
+
+
+    # Returns [string]
+    public function get_timezone_hms (int $depth = 3)
+    {
+        // Returning the value
+        return implode( ':', array_slice( explode( ':', $this->timezone_hms ), 0, $depth ) );
     }
 
 

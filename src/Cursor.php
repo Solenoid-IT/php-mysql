@@ -6,6 +6,7 @@ namespace Solenoid\MySQL;
 
 
 
+use \Solenoid\MySQL\Connection;
 use \Solenoid\Vector\Vector;
 
 
@@ -18,6 +19,8 @@ class Cursor
     private ?string        $column_separator;
 
     private string                     $mode;
+
+    private Connection           $connection;
 
 
 
@@ -41,6 +44,20 @@ class Cursor
     {
         // Returning the value
         return new Cursor( $mysqli_result, $schema, $column_separator );
+    }
+
+
+
+    # Returns [self]
+    public function set_connection (Connection &$connection)
+    {
+        // (Getting the value)
+        $this->connection = &$connection;
+
+
+
+        // Returning the value
+        return $this;
     }
 
 
@@ -127,27 +144,40 @@ class Cursor
         {// Value found
             foreach ($record as $k => $v)
             {// Processing each entry
-                switch ( $this->schema[ $k ]['type'] )
-                {
-                    case 'int':
-                        // (Getting the value)
-                        $v = (int) $v;
-                    break;
-
-                    case 'float':
-                        // (Getting the value)
-                        $v = (float) $v;
-                    break;
-
-                    default:
-                        // (Getting the value)
-                        $v = $v;
-                }
-
                 if ( $v === 'null' && $this->schema[ $k ]['null'] )
                 {// Match OK
                     // (Setting the value)
                     $v = null;
+                }
+                else
+                {// Match failed
+                    switch ( $this->schema[ $k ]['type'] )
+                    {
+                        case 'int':
+                            // (Getting the value)
+                            $v = (int) $v;
+                        break;
+
+                        case 'float':
+                            // (Getting the value)
+                            $v = (float) $v;
+                        break;
+
+                        case 'datetime':
+                            // (Getting the value)
+                            $timezone = $this->connection->get_timezone_hms( 2 );
+                            $timezone = $timezone === '+00:00' ? 'Z' : $timezone;
+
+
+
+                            // (Getting the value)
+                            $v = str_replace( ' ', 'T', $v ) . $timezone;
+                        break;
+
+                        default:
+                            // (Getting the value)
+                            $v = $v;
+                    }
                 }
 
 
