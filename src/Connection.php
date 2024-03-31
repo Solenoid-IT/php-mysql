@@ -177,14 +177,14 @@ class Connection
 
 
 
-        if ( $this->execute( 'SELECT TIMEDIFF( NOW(), UTC_TIMESTAMP );' ) === false )
+        if ( $this->execute( "SELECT TIMEDIFF( NOW(), UTC_TIMESTAMP ) AS 'timezone';" ) === false )
         {// (Unable to get the timezone HMS)
             // Returning the value
             return false;
         }
 
         // (Getting the value)
-        $this->timezone_hms = $this->fetch_cursor()->fetch_head();
+        $this->timezone_hms = $this->fetch_cursor()->set_mode('value')->fetch_head();
         $this->timezone_hms = $this->timezone_hms[0] === '-' ? $this->timezone_hms : '+' . $this->timezone_hms;
 
 
