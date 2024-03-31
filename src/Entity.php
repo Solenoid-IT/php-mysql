@@ -203,6 +203,15 @@ class Entity
 
 
 
+    # Returns [Cursor|false] | Throws [Exception]
+    public function set (array $kv_data, array $key, bool $ignore_error = false)
+    {
+        // Returning the value
+        return QueryRunner::create( $this->connection, $this->database, $this->table )->set( $kv_data, [], $key, $ignore_error );
+    }
+
+
+
     # Returns [array<string>] | Throws [Exception]
     public function fetch_ids ()
     {
