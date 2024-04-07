@@ -144,7 +144,7 @@ class Cursor
         {// Value found
             foreach ($record as $k => $v)
             {// Processing each entry
-                if ( $v === 'null' && $this->schema[ $k ]['null'] )
+                if ( $v === null && $this->schema[ $k ]['null'] )
                 {// Match OK
                     // (Setting the value)
                     $v = null;
