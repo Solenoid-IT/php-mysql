@@ -1176,37 +1176,27 @@ class QueryRunner
 
                 foreach ($table_columns as $column)
                 {// Processing each entry
-                    // (Getting the value)
-                    $column_type = preg_replace( '/\([^\)]+\)$/', '', $column['Type'] );
-
-                    switch ( $column_type )
-                    {
-                        case 'tinyint':
-                        case 'smallint':
-                        case 'mediumint':
-                        case 'int':
-                        case 'bigint':
-                            // (Setting the value)
-                            $type = 'int';
-                        break;
-
-                        case 'decimal':
-                        case 'float':
-                        case 'double':
-                        case 'real':
-                            // (Setting the value)
-                            $type = 'float';
-                        break;
-
-                        case 'timestamp':
-                        case 'datetime':
-                            // (Setting the value)
-                            $type = 'datetime';
-                        break;
-
-                        default:
-                            // (Setting the value)
-                            $type = 'string';
+                    if ( preg_match( '/^.*int/', $column['Type'] ) === 1 )
+                    {// Match OK
+                        // (Setting the value)
+                        $type = 'int';
+                    }
+                    else
+                    if ( preg_match( 'decimal|float|double|real', $column['Type'] ) === 1 )
+                    {// Match OK
+                        // (Setting the value)
+                        $type = 'float';
+                    }
+                    else
+                    if ( preg_match( 'timestamp|datetime', $column['Type'] ) === 1 )
+                    {// Match OK
+                        // (Setting the value)
+                        $type = 'datetime';
+                    }
+                    else
+                    {// Match failed
+                        // (Setting the value)
+                        $type = 'string';
                     }
 
 
