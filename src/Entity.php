@@ -67,7 +67,7 @@ class Entity
     public function register (array $records, bool $ignore_error = false)
     {
         // (Getting the value)
-        $this->lid = $this->connection->get_last_insert_id();
+        $this->lid = (int) $this->connection->get_last_insert_id();
 
 
 
@@ -212,12 +212,12 @@ class Entity
 
 
 
-    # Returns [array<string>] | Throws [Exception]
+    # Returns [array<int>] | Throws [Exception]
     public function fetch_ids ()
     {
         // (Getting the values)
-        $first = $this->lid + 1;
-        $last  = $this->connection->get_last_insert_id();
+        $last  = (int) $this->connection->get_last_insert_id();
+        $first = $last - $this->lid;
 
 
 
