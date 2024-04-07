@@ -618,6 +618,19 @@ class Connection
 
 
 
+        // (Triggering the event)
+        $this->trigger_event
+        (
+            'before-execute',
+            [
+                'connection' => $this,
+                'query'      => $query
+            ]
+        )
+        ;
+
+
+
         if ( $query_debug !== '' )
         {// Value found
             // (Getting the value)
