@@ -1182,13 +1182,13 @@ class QueryRunner
                         $type = 'int';
                     }
                     else
-                    if ( preg_match( 'decimal|float|double|real', $column['Type'] ) === 1 )
+                    if ( preg_match( '/decimal|float|double|real/', $column['Type'] ) === 1 )
                     {// Match OK
                         // (Setting the value)
                         $type = 'float';
                     }
                     else
-                    if ( preg_match( 'timestamp|datetime', $column['Type'] ) === 1 )
+                    if ( preg_match( '/timestamp|datetime/', $column['Type'] ) === 1 )
                     {// Match OK
                         // (Setting the value)
                         $type = 'datetime';
