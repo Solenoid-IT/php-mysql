@@ -7,6 +7,7 @@ namespace Solenoid\MySQL;
 
 
 use \Solenoid\MySQL\Connection;
+use \Solenoid\MySQL\QueryRunner;
 
 
 
@@ -330,6 +331,15 @@ class Entity
     {
         // Returning the value
         return $this->connection->fetch_cursor();
+    }
+
+
+
+    # Returns [QueryRunner]
+    public function compose ()
+    {
+        // Returning the value
+        return QueryRunner::create( $this->connection, $this->database, $this->table );
     }
 
 
