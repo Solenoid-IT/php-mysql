@@ -39,6 +39,8 @@ class Connection
 
     private string   $timezone_hms;
 
+    private ?string  $column_separator;
+
 
 
     # Returns [self]
@@ -74,46 +76,18 @@ class Connection
 
 
         // (Setting the values)
-        $this->charset         = 'utf8';
+        $this->charset          = 'utf8';
 
-        $this->debug           = false;
-        $this->queries         = [];
+        $this->debug            = false;
+        $this->queries          = [];
 
-        $this->insert_mode     = 'standard';
+        $this->insert_mode      = 'standard';
 
-        $this->event_listeners = [];
+        $this->event_listeners  = [];
 
-        $this->timezone_hms    = '';
-    }
+        $this->timezone_hms     = '';
 
-    # Returns [Connection]
-    public static function create
-    (
-        ?string $host     = null,
-        ?int    $port     = null,
-
-        ?string $username = null,
-        ?string $password = null,
-        
-        ?string $database = null,
-
-        ?string $socket   = null
-    )
-    {
-        // Returning the value
-        return new Connection
-        (
-            $host,
-            $port,
-
-            $username,
-            $password,
-            
-            $database,
-            
-            $socket
-        )
-        ;
+        $this->column_separator = null;
     }
 
 
@@ -815,7 +789,7 @@ class Connection
     public function fetch_cursor (?array $schema = null, ?string $column_separator = null)
     {
         // Returning the value
-        return new Cursor( $this->mysqli_result, $schema, $column_separator );
+        return new Cursor( $this->mysqli_result, $schema, $column_separator ?? $this->column_separator );
     }
 
 
@@ -872,6 +846,20 @@ class Connection
     {
         // Returning the value
         return implode( ':', array_slice( explode( ':', $this->timezone_hms ), 0, $depth ) );
+    }
+
+
+
+    # Returns [self]
+    public function set_column_separator (?string $value = null)
+    {
+        // (Getting the value)
+        $this->column_separator = $value;
+
+
+
+        // Returning the value
+        return $this;
     }
 
 
