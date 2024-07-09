@@ -836,7 +836,7 @@ class Connection
     public function fetch_entity (string $database, string $table)
     {
         // Returning the value
-        return Entity::create( $this, $database, $table );
+        return new Entity( $this, $database, $table );
     }
 
 

@@ -188,7 +188,7 @@ class Database
 
 
                         // (Appending the value)
-                        $entities[] = Entity::create
+                        $entities[] = new Entity
                         (
                             null,
                             $table,
