@@ -13,17 +13,17 @@ use \Solenoid\MySQL\QueryRunner;
 
 class Entity
 {
+    private int       $lid;
+
+
+
     public Connection $connection;
     public string     $database;
     public string     $table;
 
 
 
-    private int       $lid;
-
-
-
-    # Returns [Entity]
+    # Returns [self]
     public function __construct (Connection &$connection, string $database, string $table)
     {
         // (Getting the values)
@@ -32,26 +32,13 @@ class Entity
         $this->table      = $table;
     }
 
-    # Returns [self]
-    public static function create (Connection &$connection, string $database, string $table)
-    {
-        // Returning the value
-        return new Entity( $connection, $database, $table );
-    }
 
 
-
-    # Returns [assoc|false] | Throws [Exception]
+    # Returns [assoc|false]
     public function list_columns ()
     {
         if ( !$this->connection->execute( "SHOW FIELDS FROM `$this->database`.`$this->table`" ) )
         {// (Unable to get the fields metadata)
-            // (Setting the value)
-            $message = "Unable to get the fields metadata :: " . $this->connection->get_error_text();
-
-            // Throwing an exception
-            throw new \Exception($message);
-
             // Returning the value
             return false;
         }
@@ -64,7 +51,7 @@ class Entity
 
 
 
-    # Returns [self|false] | Throws [Exception]
+    # Returns [self|false]
     public function register (array $records, bool $ignore_error = false)
     {
         // (Getting the value)
@@ -73,14 +60,14 @@ class Entity
 
 
         // (Getting the value)
-        $columns = implode( ',', array_map( function ($column) { return "`$column`"; }, array_keys( $records[0] ) ) );
+        $columns = implode( ',', array_map( function ($column) { $column = str_replace( '`', '', $column ); return "`$column`"; }, array_keys( $records[0] ) ) );
 
 
 
         // (Setting the value)
         $values = [];
 
-        foreach ($records as $record)
+        foreach ( $records as $record )
         {// Processing each entry
             // (Appending the value)
             $values[] = '(' . implode( ',', array_map( function ($v) { return $this->connection->normalize_value( $v ); }, array_values( $record ) ) ) . ')';
@@ -120,17 +107,11 @@ class Entity
         return $this;
     }
 
-    # Returns [self|false] | Throws [Exception]
+    # Returns [self|false]
     public function unregister (array $filters = [])
     {
         if ( !QueryRunner::create( $this->connection, $this->database, $this->table )->filter( $filters )->delete() )
         {// (Unable to delete the records)
-            // (Setting the value)
-            $message = "Unable to delete the records :: " . $this->connection->get_error_text();
-
-            // Throwing an exception
-            throw new \Exception($message);
-
             // Returning the value
             return false;
         }
