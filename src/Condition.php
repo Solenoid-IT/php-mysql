@@ -117,6 +117,42 @@ class Condition
 
 
     # Returns [self]
+    public function where_list (array $values)
+    {
+        // (Getting the value)
+        $num_columns = count( array_values( $values ) );
+
+
+
+        // (Setting the value)
+        $counter = 0;
+
+        foreach ( $values as $k => $v )
+        {// Processing each entry
+            // (Incrementing the value)
+            $counter += 1;
+
+
+
+            // (Composing the query)
+            $this->where_column( null, $k )->op('=')->value($v);
+
+            if ( $counter < $num_columns - 1 )
+            {// (Column is not the last)
+                // (Composing the query)
+                $this->and();
+            }
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
     public function in (array $values, bool $raw = false)
     {
         if ( !$raw )

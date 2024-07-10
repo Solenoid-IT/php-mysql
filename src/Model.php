@@ -166,10 +166,104 @@ class Model
 
 
     # Returns [Cursor|false] | Throws [Exception]
-    public function set (array $values, array $key, bool $ignore_error = false)
+    public function set (array $values = [], array $key = [], bool $ignore_error = false)
     {
+        // (Getting the value)
+        $key_values =
+        [
+            'normalized' => [],
+            'raw'        => []
+        ]
+        ;
+
+        foreach ($key as $key_component)
+        {// Processing each entry
+            if ( $values[ $key_component ] )
+            {// Value found
+                // (Getting the value)
+                $key_values['normalized'][ $key_component ] = $values[ $key_component ];
+            }
+        }
+
+
+
+        // (Getting the value)
+        $where_kv_data = $key_values['normalized'];
+
+
+
+        // (Getting the value)
+        $cursor = ( new Query( $this->connection ) )
+            ->from( $this->database, $this->table )
+
+            ->condition_start()
+                ->where_list( $where_kv_data )
+            ->condition_end()
+
+            ->select_all()
+
+            ->run()
+        ;
+
+        if ( $cursor->is_empty() )
+        {// (Record not found)
+            if ( $this->insert( [ $values ], $ignore_error ) === false )
+            {// (Unable to insert the record)
+                // (Setting the value)
+                $message = "Unable to insert the record :: " . $this->connection->get_error_text();
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Returning the value
+                return false;
+            }
+        }
+        else
+        {// (Record found)
+            // (Getting the value)
+            $n_kv_data = array_diff_assoc( $values, $key_values['normalized'] );
+
+
+
+            // (Creating a Condition)
+            $condition = new Condition( $this->connection );
+
+            // (Composing the condition)
+            $condition = $condition
+                ->where_list( $key_values['normalized'] )
+            ;
+
+            if ( $this->update( $n_kv_data, $condition ) === false )
+            {// (Unable to update the record)
+                // (Setting the value)
+                $message = "Unable to update the record :: " . $this->connection->get_error_text();
+
+                // Throwing an exception
+                throw new \Exception($message);
+
+                // Returning the value
+                return false;
+            }
+        }
+
+
+
+        // (Getting the value)
+        $cursor = ( new Query( $this->connection ) )
+            ->condition_start()
+                ->where_list( $where_kv_data )
+            ->condition_end()
+
+            ->select_all()
+
+            ->run()
+        ;
+
+
+
         // Returning the value
-        return QueryRunner::create( $this->connection, $this->database, $this->table )->set( $values, [], $key, $ignore_error );
+        return $cursor;
     }
 
 
