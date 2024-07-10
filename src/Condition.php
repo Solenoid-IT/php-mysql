@@ -6,10 +6,19 @@ namespace Solenoid\MySQL;
 
 
 
+use \Solenoid\MySQL\Connection;
+use \Solenoid\MySQL\Query;
+
+
+
 class Condition
 {
     private Connection $connection;
     private string     $value;
+
+
+
+    public Query       $query;
 
 
 
@@ -167,6 +176,15 @@ class Condition
     {
         // Returning the value
         return $this->where_raw(' OR ');
+    }
+
+
+
+    # Returns [Query]
+    public function condition_end ()
+    {
+        // Returning the value
+        return $this->query;
     }
 
 

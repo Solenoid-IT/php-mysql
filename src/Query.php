@@ -182,12 +182,25 @@ class Query
     public function condition (?Condition $condition = null)
     {
         // (Getting the value)
-        $this->condition  = $condition ?? new Condition( $this->connection );
+        $this->condition = $condition ?? new Condition( $this->connection );
 
 
 
         // Returning the value
         return $this;
+    }
+
+    # Returns [Condition]
+    public function condition_start ()
+    {
+        // (Getting the value)
+        $this->condition        = new Condition( $this->connection );
+        $this->condition->query = &$this;
+
+
+
+        // Returning the value
+        return $this->condition;
     }
 
 

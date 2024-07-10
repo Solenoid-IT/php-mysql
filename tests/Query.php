@@ -3,7 +3,6 @@
 
 
 use \Solenoid\MySQL\Connection;
-use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Query;
 
 
@@ -23,17 +22,15 @@ $query = new Query( $connection, 'test' );
 $cursor = $query
     ->from( 'db', 'user', 'T' )
 
-    ->condition
-    (
-        ( new Condition( $connection ) )
-            ->where_raw('(')
-            ->where_column( 'T', 'username' )->op('=')->value('frank')
-            ->or()
-            ->where_column( 'T', 'email' )->op('<>')->value('johndoe@gmail.com')
-            ->where_raw(')')
-            ->and()
-            ->where_column( 'T', 'datetime.activation' )->op('IS NOT')->value(null)
-    )
+    ->condition_start()
+        ->where_raw('(')
+        ->where_column( 'T', 'username' )->op('=')->value('frank')
+        ->or()
+        ->where_column( 'T', 'email' )->op('<>')->value('johndoe@gmail.com')
+        ->where_raw(')')
+        ->and()
+        ->where_column( 'T', 'datetime.activation' )->op('IS NOT')->value(null)
+    ->condition_end()
 
     ->select( 'T', 'id' )
     ->select( 'T', 'datetime.activation' )
