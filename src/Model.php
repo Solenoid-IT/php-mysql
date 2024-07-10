@@ -177,8 +177,16 @@ class Model
     # Returns [Query]
     public function query ()
     {
+        // (Creating a Query)
+        $query = new Query( $this->connection );
+
+        // (Composing the query)
+        $query->from( $this->database, $this->table, 'T', true );
+
+
+
         // Returning the value
-        return new Query( $this->connection );
+        return $query;
     }
 
 
