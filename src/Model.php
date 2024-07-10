@@ -174,6 +174,15 @@ class Model
 
 
 
+    # Returns [Query]
+    public function query ()
+    {
+        // Returning the value
+        return new Query( $this->connection );
+    }
+
+
+
     # Returns [array<int>] | Throws [Exception]
     public function fetch_ids ()
     {
