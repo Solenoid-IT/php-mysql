@@ -337,7 +337,7 @@ class Query
     public function run ()
     {
         if ( !$this->connection->execute( $this ) )
-        {// (Unable to execute the query)
+        {// (Unable to execute the cmd)
             // (Setting the value)
             $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
 

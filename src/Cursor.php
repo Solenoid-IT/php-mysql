@@ -13,37 +13,217 @@ use \Solenoid\Vector\Vector;
 
 class Cursor
 {
-    private \mysqli_result    $mysqli_result;
+    const TYPES =
+    [
+        MYSQLI_TYPE_DECIMAL =>
+        [
+            'type' => 'DECIMAL',
+            'cast' => 'float'
+        ],
 
-    private ?array                   $schema;
-    private ?string        $column_separator;
+        MYSQLI_TYPE_NEWDECIMAL =>
+        [
+            'type' => 'DECIMAL',
+            'cast' => 'float'
+        ],
+
+        MYSQLI_TYPE_BIT =>
+        [
+            'type' => 'BIT',
+            'cast' => 'bool'
+        ],
+
+        MYSQLI_TYPE_TINY =>
+        [
+            'type' => 'TINYINT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_SHORT =>
+        [
+            'type' => 'SMALLINT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_LONG =>
+        [
+            'type' => 'INT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_FLOAT =>
+        [
+            'type' => 'FLOAT',
+            'cast' => 'float'
+        ],
+
+        MYSQLI_TYPE_DOUBLE =>
+        [
+            'type' => 'DOUBLE',
+            'cast' => 'float'
+        ],
+
+        MYSQLI_TYPE_TIMESTAMP =>
+        [
+            'type' => 'TIMESTAMP',
+            'cast' => 'string:iso-8601'
+        ],
+
+        MYSQLI_TYPE_LONGLONG =>
+        [
+            'type' => 'BIGINT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_INT24 =>
+        [
+            'type' => 'MEDIUMINT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_DATE =>
+        [
+            'type' => 'DATE',
+            'cast' => 'string:iso-8601'
+        ],
+
+        MYSQLI_TYPE_TIME =>
+        [
+            'type' => 'TIME',
+            'cast' => 'time'
+        ],
+
+        MYSQLI_TYPE_DATETIME =>
+        [
+            'type' => 'DATETIME',
+            'cast' => 'string:iso-8601'
+        ],
+
+        MYSQLI_TYPE_YEAR =>
+        [
+            'type' => 'YEAR',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_NEWDATE =>
+        [
+            'type' => 'DATE',
+            'cast' => 'string:iso-8601'
+        ],
+
+        MYSQLI_TYPE_INTERVAL =>
+        [
+            'type' => 'INTERVAL',
+            'cast' => 'undefined'
+        ],
+
+        MYSQLI_TYPE_ENUM =>
+        [
+            'type' => 'ENUM',
+            'cast' => 'undefined'
+        ],
+
+        MYSQLI_TYPE_SET =>
+        [
+            'type' => 'SET',
+            'cast' => 'undefined'
+        ],
+
+        MYSQLI_TYPE_TINY_BLOB =>
+        [
+            'type' => 'TINYBLOB',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_MEDIUM_BLOB =>
+        [
+            'type' => 'MEDIUMBLOB',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_LONG_BLOB =>
+        [
+            'type' => 'LONGBLOB',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_BLOB =>
+        [
+            'type' => 'BLOB',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_VAR_STRING =>
+        [
+            'type' => 'VARCHAR',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_STRING =>
+        [
+            'type' => 'CHAR',
+            'cast' => 'string'
+        ],
+
+        MYSQLI_TYPE_CHAR =>
+        [
+            'type' => 'TINYINT',
+            'cast' => 'int'
+        ],
+
+        MYSQLI_TYPE_GEOMETRY =>
+        [
+            'type' => 'GEOMETRY',
+            'cast' => 'undefined'
+        ],
+
+        MYSQLI_TYPE_JSON =>
+        [
+            'type' => 'JSON',
+            'cast' => 'string:json'
+        ],
+
+        MYSQLI_ENUM_FLAG =>
+        [
+            'type' => 'ENUM',
+            'cast' => 'undefined'
+        ],
+
+        MYSQLI_BINARY_FLAG =>
+        [
+            'type' => 'BINARY',
+            'cast' => 'string'
+        ]
+    ]
+    ;
+
+
+
+    private \mysqli_result    $mysqli_result;
 
     private string                     $mode;
 
     private Connection           $connection;
 
+    private bool               $typed_fields;
+
 
 
     # Returns [self]
-    public function __construct (\mysqli_result $mysqli_result, ?array $schema = null, ?string $column_separator = null)
+    public function __construct (\mysqli_result $mysqli_result)
     {
-        // (Getting the values)
-        $this->mysqli_result    = $mysqli_result;
+        // (Getting the value)
+        $this->mysqli_result = $mysqli_result;
 
-        $this->schema           = $schema;
-        $this->column_separator = $column_separator;
+
+
+        // (Setting the value)
+        $this->typed_fields = false;
 
 
 
         // (Setting the mode)
         $this->set_mode( 'record' );
-    }
-
-    # Returns [Cursor]
-    public static function create (\mysqli_result $mysqli_result, ?array $schema = null, ?string $column_separator = null)
-    {
-        // Returning the value
-        return new Cursor( $mysqli_result, $schema, $column_separator );
     }
 
 
@@ -53,6 +233,18 @@ class Cursor
     {
         // (Getting the value)
         $this->connection = &$connection;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function set_typed_fields (bool $value)
+    {
+        // (Getting the value)
+        $this->typed_fields = $value;
 
 
 
@@ -140,58 +332,71 @@ class Cursor
 
 
 
-        if ( $this->schema )
-        {// Value found
-            foreach ($record as $k => $v)
+        if ( $this->typed_fields )
+        {// Value is true
+            // (Setting the value)
+            $types = [];
+
+
+
+            // (Getting the value)
+            $fields = mysqli_fetch_fields( $this->mysqli_result );
+
+            foreach ( $fields as $field )
             {// Processing each entry
-                if ( $v === null && $this->schema[ $k ]['null'] )
-                {// Match OK
-                    // (Setting the value)
-                    $v = null;
-                }
-                else
-                {// Match failed
-                    switch ( $this->schema[ $k ]['type'] )
-                    {
-                        case 'int':
-                            // (Getting the value)
-                            $v = (int) $v;
-                        break;
-
-                        case 'float':
-                            // (Getting the value)
-                            $v = (float) $v;
-                        break;
-
-                        case 'datetime':
-                            // (Getting the value)
-                            $timezone = $this->connection->get_timezone_hms( 2 );
-                            $timezone = $timezone === '+00:00' ? 'Z' : $timezone;
-
-
-
-                            // (Getting the value)
-                            $v = str_replace( ' ', 'T', $v ) . $timezone;
-                        break;
-
-                        default:
-                            // (Getting the value)
-                            $v = $v;
-                    }
-                }
-
-
-
                 // (Getting the value)
-                $record[ $k ] = $v;
+                $types[ $field->name ] = self::TYPES[ $field->type ] ?? self::TYPES[ MYSQLI_TYPE_BLOB ];
+            }
+
+
+
+            foreach ( $record as $k => $v )
+            {// Processing each entry
+                if ( $v === null ) continue;
+
+                switch ( $types[ $k ]['cast'] )
+                {
+                    case 'int':
+                        // (Getting the value)
+                        $record[ $k ] = (int) $v;
+                    break;
+
+                    case 'float':
+                        // (Getting the value)
+                        $record[ $k ] = (float) $v;
+                    break;
+
+                    case 'bool':
+                        // (Getting the value)
+                        $record[ $k ] = $v === '1';
+                    break;
+
+                    case 'string:iso-8601':
+                        // (Getting the value)
+                        $timezone = $this->connection->get_timezone_hms( 2 );
+                        $timezone = $timezone === '+00:00' ? 'Z' : $timezone;
+
+
+
+                        // (Getting the value)
+                        $record[ $k ] = str_replace( ' ', 'T', $v ) . $timezone;
+                    break;
+
+                    case 'string:json':
+                        // (Getting the value)
+                        $record[ $k ] = json_decode( $v, true );
+                    break;
+
+                    default:
+                        // (Doing nothing)
+                }
             }
         }
 
-        if ( $this->column_separator )
-        {// Value found
-            // (Getting the value)
-            $record = Vector::create( $record, $this->column_separator )->expand()->to_array();
-        }
+
+
+        // (Getting the value)
+        $record = Vector::create( $record, '.' )->expand()->to_array();
 
 
 

@@ -786,10 +786,18 @@ class Connection
 
 
     # Returns [Cursor]
-    public function fetch_cursor (?array $schema = null, ?string $column_separator = null)
+    public function fetch_cursor ()
     {
+        // (Creating a Cursor)
+        $cursor = new Cursor( $this->mysqli_result );
+
+        // (Setting the connection)
+        $cursor->set_connection( $this );
+
+
+
         // Returning the value
-        return new Cursor( $this->mysqli_result, $schema, $column_separator ?? $this->column_separator );
+        return $cursor;
     }
 
 
