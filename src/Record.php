@@ -8,15 +8,17 @@ namespace Solenoid\MySQL;
 
 class Record
 {
-    private array $value;
-
-
-
     # Returns [self]
     public function __construct (array &$value)
     {
         // (Getting the value)
-        $this->value = &$value;
+        $object = json_decode( json_encode($value) );
+
+        foreach ( $object as $k => $v )
+        {// Processing each entry
+            // (Getting the value)
+            $this->{ $k } = $v;
+        }
     }
 
 
@@ -25,25 +27,16 @@ class Record
     public function hash (string $alg = 'sha512')
     {
         // Returning the value
-        return hash( $alg, implode( '', array_values( $this->value ) ) );
+        return hash( $alg, implode( '', array_values( $this->to_array() ) ) );
     }
 
 
 
     # Returns [assoc]
-    public function & to_array ()
+    public function to_array ()
     {
         // Returning the value
-        return $this->value;
-    }
-
-
-
-    # Returns [string]
-    public function __toString ()
-    {
-        // Returning the value
-        return json_encode( $this->value );
+        return json_decode( json_encode($this), true );
     }
 }
 

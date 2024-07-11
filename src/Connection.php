@@ -895,7 +895,7 @@ class Connection
 
 
         // (Getting the value)
-        $records = $this->fetch_cursor()->to_array();
+        $records = $this->fetch_cursor()->list();
 
         foreach ( $records as $record )
         {// Processing each entry

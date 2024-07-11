@@ -43,7 +43,7 @@ $cursor = $query
 
 
 // (Getting the value)
-$records = $cursor->to_array();
+$records = $cursor->list();
 
 
 

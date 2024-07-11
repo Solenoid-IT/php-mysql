@@ -46,7 +46,7 @@ class Entity
 
 
         // Returning the value
-        return $this->connection->fetch_cursor()->to_array();
+        return $this->connection->fetch_cursor()->list();
     }
 
 
@@ -180,7 +180,7 @@ class Entity
 
 
         // Returning the value
-        return $qr->select()->to_array( $transform_entry );
+        return $qr->select()->list( $transform_entry );
     }
 
 
