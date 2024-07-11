@@ -384,7 +384,7 @@ class Model
 
 
         // Returning the value
-        return $query->run()->set_typed_fields($typed_fields)->to_array($transform_record);
+        return $query->run()->set_typed_fields($typed_fields)->fetch_all($transform_record);
     }
 
 

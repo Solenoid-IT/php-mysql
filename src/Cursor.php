@@ -479,7 +479,7 @@ class Cursor
 
 
     # Returns [array<(Record|string)>] | Throws [Exception]
-    public function fetch_all (?callable $transform_entry = null)
+    public function list (?callable $transform_entry = null)
     {
         // (Setting the value)
         $values = [];
