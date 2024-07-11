@@ -7,6 +7,8 @@ namespace Solenoid\MySQL;
 
 
 use \Solenoid\MySQL\Connection;
+use \Solenoid\MySQL\Record;
+
 use \Solenoid\Vector\Vector;
 
 
@@ -306,7 +308,7 @@ class Cursor
 
 
 
-    # Returns [assoc|false|null] | Throws [Exception]
+    # Returns [Record|false|null] | Throws [Exception]
     public function fetch_record (?callable $transform = null)
     {
         if ( $transform === null ) $transform = function ($record) { return $record; };
@@ -405,7 +407,7 @@ class Cursor
 
 
         // Returning the value
-        return $transform($record);
+        return $transform( new Record($record) );
     }
 
     # Returns [string|false|null] | Throws [Exception]
@@ -435,7 +437,7 @@ class Cursor
 
 
         // Returning the value
-        return ( array_values( $record ) )[0];
+        return ( array_values( $record->to_array() ) )[0];
     }
 
 
@@ -461,7 +463,7 @@ class Cursor
 
                 case 'value':
                     // (Calling the function)
-                    $break = $handle_entry( ( array_values( $record ) )[0] ) === false;
+                    $break = $handle_entry( ( array_values( $record->to_array() ) )[0] ) === false;
                 break;
             }
 
@@ -474,8 +476,10 @@ class Cursor
         }
     }
 
-    # Returns [array<(assoc|string)>] | Throws [Exception]
-    public function to_array (?callable $transform_entry = null)
+
+
+    # Returns [array<(Record|string)>] | Throws [Exception]
+    public function fetch_all (?callable $transform_entry = null)
     {
         // (Setting the value)
         $values = [];
@@ -493,7 +497,7 @@ class Cursor
 
                     case 'value':
                         // (Getting the value)
-                        $value = ( array_values( $record ) )[0];
+                        $value = ( array_values( $record->to_array() ) )[0];
                     break;
                 }
             }
@@ -508,7 +512,7 @@ class Cursor
 
                     case 'value':
                         // (Getting the value)
-                        $value = ( array_values( $record ) )[0];
+                        $value = ( array_values( $record->to_array() ) )[0];
 
                         // (Getting the value)
                         $value = $transform_entry( $value );
@@ -540,7 +544,7 @@ class Cursor
 
 
 
-    # Returns [(assoc|string)|false|null] | Throws [Exception]
+    # Returns [(Record|string)|false|null] | Throws [Exception]
     public function fetch_head (?callable $transform = null)
     {
         // (Setting the value)
@@ -557,7 +561,7 @@ class Cursor
 
                 case 'value':
                     // (Getting the value)
-                    $head = ( array_values( $record ) )[0];
+                    $head = ( array_values( $record->to_array() ) )[0];
                 break;
             }
 
@@ -593,7 +597,7 @@ class Cursor
         return $head;
     }
 
-    # Returns [(assoc|string)|false|null] | Throws [Exception]
+    # Returns [(Record|string)|false|null] | Throws [Exception]
     public function fetch_tail (?callable $transform = null)
     {
         // (Setting the value)
@@ -610,7 +614,7 @@ class Cursor
                 
                 case 'value':
                     // (Getting the value)
-                    $tail = ( array_values( $record ) )[0];
+                    $tail = ( array_values( $record->to_array() ) )[0];
                 break;
             }
             
@@ -705,7 +709,7 @@ class Cursor
     public function __toString ()
     {
         // Returning the value
-        return json_encode( $this->to_array() );
+        return json_encode( $this->fetch_all() );
     }
 }
 
