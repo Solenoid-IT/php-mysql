@@ -709,7 +709,7 @@ class Cursor
     public function __toString ()
     {
         // Returning the value
-        return json_encode( $this->fetch_all() );
+        return json_encode( $this->list() );
     }
 }
 
