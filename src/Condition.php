@@ -117,17 +117,17 @@ class Condition
 
 
     # Returns [self]
-    public function filter (array $condition)
+    public function filter (array $value)
     {
         // (Getting the value)
-        $num_x = count( $condition );
+        $num_x = count( $value );
 
 
 
         // (Setting the value)
         $x = 0;
 
-        foreach ( $condition as $k => $v )
+        foreach ( $value as $k => $v )
         {// Processing each entry
             // (Incrementing the value)
             $x += 1;

@@ -197,7 +197,7 @@ class Model
             ->from( $this->database, $this->table )
 
             ->condition_start()
-                ->where_list( $where_kv_data )
+                ->filter( [ $where_kv_data ] )
             ->condition_end()
 
             ->select_all()
@@ -231,7 +231,7 @@ class Model
 
             // (Composing the condition)
             $condition = $condition
-                ->where_list( $key_values['normalized'] )
+                ->filter( [ $key_values['normalized'] ] )
             ;
 
             if ( $this->update( $n_kv_data, $condition ) === false )
@@ -252,7 +252,7 @@ class Model
         // (Getting the value)
         $cursor = ( new Query( $this->connection ) )
             ->condition_start()
-                ->where_list( $where_kv_data )
+                ->filter( [ $where_kv_data ] )
             ->condition_end()
 
             ->select_all()
