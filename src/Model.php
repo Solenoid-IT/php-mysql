@@ -333,7 +333,7 @@ class Model
     }
 
     # Returns [array<assoc>]
-    public function list (array $filter = [], array $fields = [], array $exclude_fields = [], array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
+    public function list (array $filter = [], array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
     {
         // (Getting the value)
         $query = $this->query()->condition_start()->filter($filter)->condition_end();
