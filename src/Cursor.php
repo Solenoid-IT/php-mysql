@@ -307,8 +307,12 @@ class Cursor
 
 
     # Returns [assoc|false|null] | Throws [Exception]
-    public function fetch_record ()
+    public function fetch_record (?callable $transform = null)
     {
+        if ( $transform === null ) $transform = function ($record) { return $record; };
+
+
+
         // (Fetching the assoc)
         $record = mysqli_fetch_assoc( $this->mysqli_result );
 
@@ -401,7 +405,7 @@ class Cursor
 
 
         // Returning the value
-        return $record;
+        return $transform($record);
     }
 
     # Returns [string|false|null] | Throws [Exception]
@@ -537,12 +541,12 @@ class Cursor
 
 
     # Returns [(assoc|string)|false|null] | Throws [Exception]
-    public function fetch_head ()
+    public function fetch_head (?callable $transform = null)
     {
         // (Setting the value)
         $head = null;
 
-        while ( $record = $this->fetch_record() )
+        while ( $record = $this->fetch_record($transform) )
         {// Processing each entry
             switch ( $this->mode )
             {
@@ -590,12 +594,12 @@ class Cursor
     }
 
     # Returns [(assoc|string)|false|null] | Throws [Exception]
-    public function fetch_tail ()
+    public function fetch_tail (?callable $transform = null)
     {
         // (Setting the value)
         $tail = null;
 
-        while ( $record = $this->fetch_record() )
+        while ( $record = $this->fetch_record($transform) )
         {// Processing each entry
             switch ( $this->mode )
             {

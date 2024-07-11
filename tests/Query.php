@@ -24,16 +24,16 @@ $cursor = $query
 
     ->condition_start()
         ->where_raw('(')
-        ->where_column( 'T', 'username' )->op('=')->value('frank')
+        ->where_field( 'T', 'username' )->op('=')->value('frank')
         ->or()
-        ->where_column( 'T', 'email' )->op('<>')->value('johndoe@gmail.com')
+        ->where_field( 'T', 'email' )->op('<>')->value('johndoe@gmail.com')
         ->where_raw(')')
         ->and()
-        ->where_column( 'T', 'datetime.activation' )->op('IS NOT')->value(null)
+        ->where_field( 'T', 'datetime.activation' )->op('IS NOT')->value(null)
     ->condition_end()
 
-    ->select( 'T', 'id' )
-    ->select( 'T', 'datetime.activation' )
+    ->select_field( 'T', 'id' )
+    ->select_field( 'T', 'datetime.activation' )
 
     ->order_by( 'T', 'id', 'DESC' )
 

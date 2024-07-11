@@ -71,7 +71,7 @@ class Condition
     }
 
     # Returns [self]
-    public function where_column (?string $alias = null, string $column)
+    public function where_field (?string $alias = null, string $column)
     {
         // (Appending the value)
         $this->where_raw( ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
@@ -155,7 +155,7 @@ class Condition
 
 
                 // (Composing the condition)
-                $this->where_column( null, $kk  )->op('=')->value( $vv );
+                $this->where_field( null, $kk  )->op('=')->value( $vv );
 
                 if ( $y < $num_y - 1 )
                 {// (Y is not the last one)

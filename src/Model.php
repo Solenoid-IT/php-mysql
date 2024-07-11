@@ -285,6 +285,68 @@ class Model
 
 
 
+    # Returns [assoc|false]
+    public function find (array $filter, array $fields = [], bool $typed_fields = false, ?callable $transform_record = null)
+    {
+        // (Getting the value)
+        $query = $this->query()->condition_start()->filter($filter)->condition_end();
+
+        if ( $fields )
+        {// Value is not empty
+            foreach ( $fields as $field )
+            {// Processing each entry
+                // (Composing the query)
+                $query->select_field( null, $field );
+            }
+        }
+        else
+        {// Value is empty
+            // (Composing the query)
+            $query->select_all();
+        }
+
+
+
+        // Returning the value
+        return $query->run()->set_typed_fields($typed_fields)->fetch_head($transform_record);
+    }
+
+    # Returns [array<assoc>|false]
+    public function list (array $filter = [], array $fields = [], array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
+    {
+        // (Getting the value)
+        $query = $this->query()->condition_start()->filter($filter)->condition_end();
+
+        if ( $fields )
+        {// Value is not empty
+            foreach ( $fields as $field )
+            {// Processing each entry
+                // (Composing the query)
+                $query->select_field( null, $field );
+            }
+        }
+        else
+        {// Value is empty
+            // (Composing the query)
+            $query->select_all();
+        }
+
+
+
+        foreach ( $order as $column => $direction )
+        {// Processing each entry
+            // (Composing the query)
+            $query->order_by( null, $column, $direction );
+        }
+
+
+
+        // Returning the value
+        return $query->run()->set_typed_fields($typed_fields)->to_array($transform_record);
+    }
+
+
+
     # Returns [array<int>] | Throws [Exception]
     public function fetch_ids ()
     {

@@ -153,10 +153,20 @@ class Query
 
 
     # Returns [self]
-    public function on (string $a, string $op, string $b)
+    public function on (?string $a_table_alias = null, string $a, string $op, ?string $b_table_alias = null, string $b)
     {
+        // (Getting the value)
+        $a_table_alias = $a_table_alias ? ( $this->connection->sanitize_text( str_replace( '`', '', $a_table_alias ) ) . '.' ) : '';
+        $a             = '`' . $this->connection->sanitize_text( str_replace( '`', '', $a ) ) . '`';
+
+        $b_table_alias = $b_table_alias ? ( $this->connection->sanitize_text( str_replace( '`', '', $b_table_alias ) ) . '.' ) : '';
+        $b             = '`' . $this->connection->sanitize_text( str_replace( '`', '', $b ) ) . '`';
+
+
+
+
         // (Appending the value)
-        $this->from_raw( '`' . $this->connection->sanitize_text( str_replace( '`', '', $a ) ) . '`' . ' ' . $op . ' ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $b ) ) . '`' );
+        $this->from_raw( "{$a_table_alias}$a $op {$b_table_alias}$b" );
 
 
 
@@ -169,6 +179,18 @@ class Query
     {
         // (Appending the value)
         $this->from_raw( ' AND ' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function on_or ()
+    {
+        // (Appending the value)
+        $this->from_raw( ' OR ' );
 
 
 
@@ -206,10 +228,10 @@ class Query
 
 
     # Returns [self]
-    public function group_by (?string $alias = null, string $column)
+    public function group_by (?string $table_alias = null, string $column)
     {
         // (Appending the value)
-        $this->group[] = ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
+        $this->group[] = ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
 
 
 
@@ -218,10 +240,10 @@ class Query
     }
 
     # Returns [self]
-    public function order_by (?string $alias = null, string $column, string $direction)
+    public function order_by (?string $table_alias = null, string $column, string $direction)
     {
         // (Appending the value)
-        $this->order[] = ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
+        $this->order[] = ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
 
 
 
@@ -296,10 +318,10 @@ class Query
     }
 
     # Returns [self]
-    public function select (?string $alias = null, string $column, ?string $name = null)
+    public function select_field (?string $table_alias = null, string $column, ?string $name = null)
     {
         // (Appending the value)
-        $this->select_raw( ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
 
 
 
@@ -308,10 +330,10 @@ class Query
     }
 
     # Returns [self]
-    public function select_all (?string $alias = null)
+    public function select_all (?string $table_alias = null)
     {
         // (Appending the value)
-        $this->select_raw( ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '*' );
+        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '*' );
 
 
 
@@ -320,10 +342,10 @@ class Query
     }
 
     # Returns [self]
-    public function select_agg (string $type, ?string $alias = null, string $column, ?string $name = null)
+    public function select_agg (string $type, ?string $table_alias = null, string $column, ?string $name = null)
     {
         // (Appending the value)
-        $this->select_raw( $type . '( ' . ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+        $this->select_raw( $type . '( ' . ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
 
 
 
