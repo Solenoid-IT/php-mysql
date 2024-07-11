@@ -117,30 +117,64 @@ class Condition
 
 
     # Returns [self]
-    public function where_list (array $values)
+    public function filter (array $condition)
     {
         // (Getting the value)
-        $num_columns = count( array_values( $values ) );
+        $num_x = count( $condition );
 
 
 
         // (Setting the value)
-        $counter = 0;
+        $x = 0;
 
-        foreach ( $values as $k => $v )
+        foreach ( $condition as $k => $v )
         {// Processing each entry
             // (Incrementing the value)
-            $counter += 1;
+            $x += 1;
 
 
 
-            // (Composing the query)
-            $this->where_column( null, $k )->op('=')->value($v);
+            // (Composing the condition)
+            $this->where_raw('( ');
 
-            if ( $counter < $num_columns - 1 )
-            {// (Column is not the last)
-                // (Composing the query)
-                $this->and();
+
+
+            // (Getting the value)
+            $num_y = count( array_values( $v ) );
+
+
+
+            // (Setting the value)
+            $y = 0;
+
+            foreach ( $v as $kk => $vv )
+            {// Processing each entry
+                // (Incrementing the value)
+                $y += 1;
+
+
+
+                // (Composing the condition)
+                $this->where_column( null, $kk  )->op('=')->value( $vv );
+
+                if ( $y < $num_y - 1 )
+                {// (Y is not the last one)
+                    // (Composing the condition)
+                    $this->and();
+                }
+            }
+
+
+
+            // (Composing the condition)
+            $this->where_raw(' )');
+
+
+
+            if ( $x < $num_x - 1 )
+            {// (X is not the last)
+                // (Composing the condition)
+                $this->or();
             }
         }
 
