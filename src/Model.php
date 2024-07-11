@@ -286,17 +286,38 @@ class Model
 
 
     # Returns [assoc|false]
-    public function find (array $filter, array $fields = [], bool $typed_fields = false, ?callable $transform_record = null)
+    public function find (array $filter, array $fields = [], bool $exclude_fields = false, bool $typed_fields = false, ?callable $transform_record = null)
     {
         // (Getting the value)
         $query = $this->query()->condition_start()->filter($filter)->condition_end();
 
+
+
         if ( $fields )
         {// Value is not empty
-            foreach ( $fields as $field )
-            {// Processing each entry
-                // (Composing the query)
-                $query->select_field( null, $field );
+            if ( $exclude_fields )
+            {// (Fields are excluded)
+                // (Getting the value)
+                $table_fields = array_keys( $this->describe() );
+
+
+
+                // (Getting the value)
+                $include_fields = array_diff( $table_fields, $fields );
+
+                foreach ( $include_fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+            else
+            {// (Fields are included)
+                foreach ( $fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
             }
         }
         else
@@ -311,18 +332,39 @@ class Model
         return $query->run()->set_typed_fields($typed_fields)->fetch_head($transform_record);
     }
 
-    # Returns [array<assoc>|false]
-    public function list (array $filter = [], array $fields = [], array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
+    # Returns [array<assoc>]
+    public function list (array $filter = [], array $fields = [], array $exclude_fields = [], array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
     {
         // (Getting the value)
         $query = $this->query()->condition_start()->filter($filter)->condition_end();
 
+        
+
         if ( $fields )
         {// Value is not empty
-            foreach ( $fields as $field )
-            {// Processing each entry
-                // (Composing the query)
-                $query->select_field( null, $field );
+            if ( $exclude_fields )
+            {// (Fields are excluded)
+                // (Getting the value)
+                $table_fields = array_keys( $this->describe() );
+
+
+
+                // (Getting the value)
+                $include_fields = array_diff( $table_fields, $fields );
+
+                foreach ( $include_fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+            else
+            {// (Fields are included)
+                foreach ( $fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
             }
         }
         else
@@ -384,6 +426,15 @@ class Model
 
         // Returning the value
         return $this;
+    }
+
+
+
+    # Returns [assoc|false]
+    public function describe ()
+    {
+        // Returning the value
+        return $this->connection->describe( $this->database, $this->table );
     }
 
 

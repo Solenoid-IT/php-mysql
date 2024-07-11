@@ -872,6 +872,53 @@ class Connection
 
 
 
+    # Returns [assoc|false]
+    public function describe (string $database, string $table)
+    {
+        // (Getting the values)
+        $database = str_replace( '`', '', $database );
+        $table    = str_replace( '`', '', $table );
+
+
+
+        if ( !$this->execute( "DESCRIBE `$database`.`$table`;" ) )
+        {// (Unable to execute the cmd)
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Setting the value)
+        $fields = [];
+
+
+
+        // (Getting the value)
+        $records = $this->fetch_cursor()->to_array();
+
+        foreach ( $records as $record )
+        {// Processing each entry
+            // (Getting the value)
+            $field = $record['Field'];
+
+            // (Removing the element)
+            unset( $record['Field'] );
+
+
+
+            // (Getting the value)
+            $fields[ $record['Field'] ] = $field;
+        }
+
+
+
+        // Returning the value
+        return $fields;
+    }
+
+
+
     # Returns [void]
     public function __destruct ()
     {
