@@ -296,7 +296,7 @@ class Model
 
 
     # Returns [Record|false]
-    public function find (Condition $condition, array $fields = [], bool $exclude_fields = false, bool $typed_fields = false, ?callable $transform_record = null)
+    public function find (Condition $condition, array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
     {
         // (Setting the connection)
         $condition->set_connection( $this->connection );
@@ -348,7 +348,7 @@ class Model
     }
 
     # Returns [array<Record>]
-    public function list (?Condition $condition = null, array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
+    public function list (?Condition $condition = null, array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = true, ?callable $transform_record = null)
     {
         if ( $condition === null ) $condition = new Condition();
 

@@ -220,7 +220,7 @@ class Cursor
 
 
         // (Setting the value)
-        $this->typed_fields = false;
+        $this->typed_fields = true;
 
 
 
