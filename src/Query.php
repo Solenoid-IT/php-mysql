@@ -204,7 +204,7 @@ class Query
     public function condition (?Condition $condition = null)
     {
         // (Getting the value)
-        $this->condition = $condition ?? new Condition( $this->connection );
+        $this->condition = $condition ?? ( new Condition() )->set_connection( $this->connection )->set_query( $this );
 
 
 
@@ -216,8 +216,7 @@ class Query
     public function condition_start ()
     {
         // (Getting the value)
-        $this->condition        = new Condition( $this->connection );
-        $this->condition->query = &$this;
+        $this->condition = ( new Condition() )->set_connection( $this->connection )->set_query( $this );
 
 
 

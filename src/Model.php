@@ -100,7 +100,12 @@ class Model
     # Returns [self|false]
     public function update (array $values, ?Condition $condition = null)
     {
-        if ( !$condition ) $condition = new Condition( $this->connection );
+        if ( !$condition ) $condition = new Condition();
+
+
+
+        // (Setting the connection)
+        $condition->set_connection( $this->connection );
 
 
 
@@ -147,7 +152,12 @@ class Model
     # Returns [self|false]
     public function delete (?Condition $condition = null)
     {
-        if ( !$condition ) $condition = new Condition( $this->connection );
+        if ( !$condition ) $condition = new Condition();
+
+
+
+        // (Setting the connection)
+        $condition->set_connection( $this->connection );
 
 
 
@@ -285,11 +295,16 @@ class Model
 
 
 
-    # Returns [assoc|false]
-    public function find (array $filter, array $fields = [], bool $exclude_fields = false, bool $typed_fields = false, ?callable $transform_record = null)
+    # Returns [Record|false]
+    public function find (Condition $condition, array $fields = [], bool $exclude_fields = false, bool $typed_fields = false, ?callable $transform_record = null)
     {
+        // (Setting the connection)
+        $condition->set_connection( $this->connection );
+
+
+
         // (Getting the value)
-        $query = $this->query()->condition_start()->filter($filter)->condition_end();
+        $query = $this->query()->condition( $condition );
 
 
 
@@ -332,11 +347,20 @@ class Model
         return $query->run()->set_typed_fields($typed_fields)->fetch_head($transform_record);
     }
 
-    # Returns [array<assoc>]
-    public function list (array $filter = [], array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
+    # Returns [array<Record>]
+    public function list (?Condition $condition = null, array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = false, ?callable $transform_record = null)
     {
+        if ( $condition === null ) $condition = new Condition();
+
+
+
+        // (Setting the connection)
+        $condition->set_connection( $this->connection );
+
+
+
         // (Getting the value)
-        $query = $this->query()->condition_start()->filter($filter)->condition_end();
+        $query = $this->query()->condition( $condition );
 
         
 

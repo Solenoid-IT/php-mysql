@@ -13,25 +13,46 @@ use \Solenoid\MySQL\Query;
 
 class Condition
 {
-    private Connection $connection;
     private string     $value;
 
 
 
+    public Connection  $connection;
     public Query       $query;
 
 
 
     # Returns [self]
-    public function __construct (Connection &$connection)
+    public function __construct ()
+    {
+        // (Setting the value)
+        $this->value = '';
+    }
+
+
+
+    # Returns [self]
+    public function set_connection (Connection &$connection)
     {
         // (Getting the value)
         $this->connection = &$connection;
 
 
 
-        // (Setting the value)
-        $this->value = '';
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function set_query (Query &$query)
+    {
+        // (Getting the value)
+        $this->query = &$query;
+
+
+
+        // Returning the value
+        return $this;
     }
 
 
