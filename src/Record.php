@@ -6,7 +6,7 @@ namespace Solenoid\MySQL;
 
 
 
-class Record
+class Record extends \stdClass
 {
     # Returns [self]
     public function __construct (array &$value)
