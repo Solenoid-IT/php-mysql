@@ -92,10 +92,10 @@ class Condition
     }
 
     # Returns [self]
-    public function where_field (?string $alias = null, string $column)
+    public function where_field (?string $table_alias = null, string $column)
     {
         // (Appending the value)
-        $this->where_raw( ( $alias ? $this->connection->sanitize_text($alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
+        $this->where_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
 
 
 
@@ -230,22 +230,25 @@ class Condition
         return $this;
     }
 
+
+
     # Returns [self]
-    public function not_in (array $values, bool $raw = false)
+    public function is (mixed $value)
     {
-        if ( !$raw )
-        {// (Values are not raw)
-            foreach ( $values as &$value )
-            {// Processing each entry
-                // (Getting the value)
-                $value = $this->connection->normalize_value($value);
-            }
-        }
+        // (Composing the query)
+        $this->op('IS')->value($value);
 
 
-        
-        // (Appending the value)
-        $this->where_raw( ' NOT IN ( ' . implode( ', ', $values ) . ' )' );
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function is_not (mixed $value)
+    {
+        // (Composing the query)
+        $this->op('IS NOT')->value($value);
 
 
 
@@ -254,6 +257,93 @@ class Condition
     }
 
 
+
+    # Returns [self]
+    public function equal (mixed $value)
+    {
+        // (Composing the query)
+        $this->op('=')->value($value);
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function not_equal (mixed $value)
+    {
+        // (Composing the query)
+        $this->op('<>')->value($value);
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function lt (mixed $value)
+    {
+        // (Composing the query)
+        $this->op('<')->value($value);
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function gt (mixed $value)
+    {
+        // (Composing the query)
+        $this->op('>')->value($value);
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function like (string $start_wildcard = '%', string $value, string $end_wildcard = '%')
+    {
+        // (Composing the query)
+        $this->op('LIKE')->value( "'" . $start_wildcard . $this->connection->sanitize_text( $value ) . $end_wildcard . "'", true );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function between (mixed $min, mixed $max)
+    {
+        // (Composing the query)
+        $this->op('BETWEEN')->value($min)->and()->value($max);
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function not ()
+    {
+        // Returning the value
+        return $this->where_raw(' NOT ');
+    }
 
     # Returns [self]
     public function and ()
