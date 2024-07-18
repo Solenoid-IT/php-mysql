@@ -291,10 +291,15 @@ class Model
 
 
     # Returns [self]
-    public function condition (Condition $condition)
+    public function filter (array $filter)
     {
         // (Getting the value)
-        $this->condition = $condition->set_connection( $this->connection )->set_model( $this );
+        $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
+
+
+
+        // (Composing the condition)
+        $this->condition->filter($filter);
 
 
 
