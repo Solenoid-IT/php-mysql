@@ -900,15 +900,15 @@ class Connection
         foreach ( $records as $record )
         {// Processing each entry
             // (Getting the value)
-            $field = $record['Field'];
+            $field = $record->Field;
 
             // (Removing the element)
-            unset( $record['Field'] );
+            unset( $record->Field );
 
 
 
             // (Getting the value)
-            $fields[ $record['Field'] ] = $field;
+            $fields[ $record->Field ] = $field;
         }
 
 
