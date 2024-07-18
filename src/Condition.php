@@ -374,7 +374,7 @@ class Condition
     public function __toString ()
     {
         // Returning the value
-        return $this->value === '' ? '1' : $this->value;
+        return $this->value === '' ? '1' : trim( $this->value );
     }
 }
 
