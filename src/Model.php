@@ -231,8 +231,8 @@ class Model
 
 
 
-            // (Creating a Condition)
-            $condition = new Condition( $this->connection );
+            // (Getting the value)
+            $condition = ( new Condition() )->set_connection( $this->connection );
 
             // (Composing the condition)
             $condition = $condition
