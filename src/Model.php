@@ -246,6 +246,8 @@ class Model
 
         // (Getting the value)
         $cursor = ( new Query( $this->connection ) )
+            ->from( $this->database, $this->table )
+
             ->condition_start()
                 ->filter( [ $where_kv_data ] )
             ->condition_end()
