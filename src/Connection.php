@@ -908,7 +908,7 @@ class Connection
 
 
             // (Getting the value)
-            $fields[ $record->Field ] = $field;
+            $fields[ $field ] = (array) $record;
         }
 
 
