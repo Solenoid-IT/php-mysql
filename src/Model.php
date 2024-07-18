@@ -288,6 +288,18 @@ class Model
 
 
 
+    # Returns [self]
+    public function condition (Condition $condition)
+    {
+        // (Getting the value)
+        $this->condition = $condition->set_connection( $this->connection )->set_model( $this );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
     # Returns [Condition]
     public function condition_start ()
     {
