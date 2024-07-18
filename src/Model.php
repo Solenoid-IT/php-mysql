@@ -14,6 +14,7 @@ use \Solenoid\MySQL\Condition;
 class Model
 {
     private int       $lid;
+    private Condition $condition;
 
 
 
@@ -98,14 +99,10 @@ class Model
     }
 
     # Returns [self|false]
-    public function update (array $values, ?Condition $condition = null)
+    public function update (array $values)
     {
-        if ( !$condition ) $condition = new Condition();
-
-
-
-        // (Setting the connection)
-        $condition->set_connection( $this->connection );
+        // (Getting the value)
+        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
 
 
 
@@ -150,14 +147,10 @@ class Model
     }
 
     # Returns [self|false]
-    public function delete (?Condition $condition = null)
+    public function delete ()
     {
-        if ( !$condition ) $condition = new Condition();
-
-
-
-        // (Setting the connection)
-        $condition->set_connection( $this->connection );
+        // (Getting the value)
+        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
 
 
 
@@ -295,16 +288,20 @@ class Model
 
 
 
-    # Returns [Record|false]
-    public function find (Condition $condition, array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
+    # Returns [Condition]
+    public function condition_start ()
     {
-        // (Setting the connection)
-        $condition->set_connection( $this->connection );
+        // Returning the value
+        return $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
+    }
 
 
 
+    # Returns [Record|false]
+    public function find (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
+    {
         // (Getting the value)
-        $query = $this->query()->condition( $condition );
+        $query = $this->query()->condition( $this->condition );
 
 
 
@@ -348,19 +345,10 @@ class Model
     }
 
     # Returns [array<Record>]
-    public function list (?Condition $condition = null, array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = true, ?callable $transform_record = null)
+    public function list (array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = true, ?callable $transform_record = null)
     {
-        if ( $condition === null ) $condition = new Condition();
-
-
-
-        // (Setting the connection)
-        $condition->set_connection( $this->connection );
-
-
-
         // (Getting the value)
-        $query = $this->query()->condition( $condition );
+        $query = $this->query()->condition( $this->condition ?? ( new Condition() )->set_connection( $this->connection ) );
 
         
 

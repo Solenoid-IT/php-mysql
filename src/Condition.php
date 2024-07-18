@@ -8,6 +8,7 @@ namespace Solenoid\MySQL;
 
 use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Query;
+use \Solenoid\MySQL\Model;
 
 
 
@@ -19,6 +20,7 @@ class Condition
 
     public Connection  $connection;
     public Query       $query;
+    public Model       $model;
 
 
 
@@ -48,6 +50,18 @@ class Condition
     {
         // (Getting the value)
         $this->query = &$query;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function set_model (Model &$model)
+    {
+        // (Getting the value)
+        $this->model = &$model;
 
 
 
@@ -361,11 +375,11 @@ class Condition
 
 
 
-    # Returns [Query]
+    # Returns [Query|Model]
     public function condition_end ()
     {
         // Returning the value
-        return $this->query;
+        return $this->query ?? $this->model;
     }
 
 
