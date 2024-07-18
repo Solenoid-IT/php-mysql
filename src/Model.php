@@ -13,8 +13,8 @@ use \Solenoid\MySQL\Condition;
 
 class Model
 {
-    private int       $lid;
-    private Condition $condition;
+    private int        $lid;
+    private ?Condition $condition;
 
 
 
@@ -31,6 +31,8 @@ class Model
         $this->connection = &$connection;
         $this->database   = str_replace( '`', '', $database );
         $this->table      = str_replace( '`', '', $table );
+
+        $this->condition  = null;
     }
 
 
