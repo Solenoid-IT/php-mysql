@@ -386,8 +386,8 @@ class Query
         $source     = $this->source;
         $condition  = $this->condition;
 
-        $group_by   = $this->group ? implode( ",\n\t", $this->group ) : '';
-        $order_by   = $this->order ? implode( ",\n\t", $this->order ) : '';
+        $group_by   = $this->group ? 'GROUP BY' . "\n\t" . implode( ",\n\t", $this->group ) : '';
+        $order_by   = $this->order ? 'ORDER BY' . "\n\t" . implode( ",\n\t", $this->order ) : '';
 
         $limit      = $this->limit;
 
