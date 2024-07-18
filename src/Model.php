@@ -313,7 +313,7 @@ class Model
     public function count ()
     {
         // (Getting the value)
-        $query = $this->query()->condition( $this->condition )->select_agg( 'COUNT', null, '*', 'num_records' );
+        $query = $this->query()->condition( $this->condition )->count_all( null, 'num_records' );
 
 
 

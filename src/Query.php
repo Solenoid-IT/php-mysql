@@ -354,6 +354,20 @@ class Query
 
 
 
+    # Returns [self]
+    public function count_all (?string $table_alias = null, ?string $name = null)
+    {
+        // (Appending the value)
+        $this->select_raw( 'COUNT( ' . ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '*' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     # Returns [Cursor|false] | Throws [Exception]
     public function run ()
     {
