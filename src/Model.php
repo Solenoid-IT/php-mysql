@@ -309,6 +309,18 @@ class Model
 
 
 
+    # Returns [int]
+    public function count ()
+    {
+        // (Getting the value)
+        $query = $this->query()->condition( $this->condition )->select_agg( 'COUNT', null, '*', 'num_records' );
+
+
+
+        // Returning the value
+        return (int) $query->run()->set_mode('value')->fetch_head();
+    }
+
     # Returns [Record|false]
     public function find (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
     {
