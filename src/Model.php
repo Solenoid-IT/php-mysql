@@ -229,17 +229,7 @@ class Model
             // (Getting the value)
             $n_kv_data = array_diff_assoc( $values, $key_values['normalized'] );
 
-
-
-            // (Getting the value)
-            $condition = ( new Condition() )->set_connection( $this->connection );
-
-            // (Composing the condition)
-            $condition = $condition
-                ->filter( [ $key_values['normalized'] ] )
-            ;
-
-            if ( $this->update( $n_kv_data, $condition ) === false )
+            if ( $this->filter( [ $key_values['normalized'] ] )->update( $n_kv_data ) === false )
             {// (Unable to update the record)
                 // (Setting the value)
                 $message = "Unable to update the record :: " . $this->connection->get_error_text();
@@ -264,6 +254,11 @@ class Model
 
             ->run()
         ;
+
+
+
+        // (Setting the value)
+        $this->condition = null;
 
 
 
