@@ -13,14 +13,15 @@ use \Solenoid\MySQL\Condition;
 
 class Model
 {
-    private int        $lid;
-    private ?Condition $condition;
+    private int $lid;
 
 
 
     public Connection $connection;
     public string     $database;
     public string     $table;
+
+    public ?Condition $condition;
 
 
 
