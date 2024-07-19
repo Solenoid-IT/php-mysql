@@ -309,7 +309,7 @@ class Model
     public function condition_start ()
     {
         // Returning the value
-        return $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
+        return $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this )->set_origin( $this );
     }
 
 

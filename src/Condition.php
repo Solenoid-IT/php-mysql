@@ -22,6 +22,8 @@ class Condition
     public Query       $query;
     public Model       $model;
 
+    public             $origin;
+
 
 
     # Returns [self]
@@ -62,6 +64,18 @@ class Condition
     {
         // (Getting the value)
         $this->model = &$model;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function set_origin (mixed &$origin)
+    {
+        // (Getting the value)
+        $this->origin = &$origin;
 
 
 
@@ -375,11 +389,11 @@ class Condition
 
 
 
-    # Returns [Query|Model]
+    # Returns [Query|Model|mixed]
     public function condition_end ()
     {
         // Returning the value
-        return $this->query ?? $this->model;
+        return $this->query ?? $this->model ?? $this->origin;
     }
 
 
