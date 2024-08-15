@@ -289,7 +289,7 @@ class Model
 
 
     # Returns [self]
-    public function filter (array $filter)
+    public function filter (array $filter = [])
     {
         // (Getting the value)
         $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
