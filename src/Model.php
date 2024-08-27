@@ -653,6 +653,13 @@ class Model
         return $this;
     }
 
+    # Returns [bool]
+    public function exists ()
+    {
+        // Returning the value
+        return $this->count() > 0;
+    }
+
 
 
     # Returns [string]
