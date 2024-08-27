@@ -529,6 +529,132 @@ class Model
 
 
 
+    # Returns [self]
+    public function reset ()
+    {
+        // (Getting the value)
+        $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function where ()
+    {
+        // (Getting the values)
+        $args     = func_get_args();
+        $num_args = count($args);
+
+
+
+        // (Composing the condition)
+        $this->condition->where_raw('(');
+
+
+
+        switch ( $num_args )
+        {
+            case 3:// (Format = COV)
+                // (Getting the values)
+                [ $column, $operator, $value ] = $args;
+
+                // (Composing the condition)
+                $this->condition->where_field( null, $column )->op( $operator )->value( $value );
+            break;
+
+            case 2:// (Format = CV)
+                // (Getting the value)
+                [ $column, $value ] = $args;
+
+                // (Composing the condition)
+                $this->condition->where_field( null, $column )->op( '=' )->value( $value );
+            break;
+
+            case 1:// (Format = COV[] or CV[] or RAW)
+                if ( is_array( $args[0] ) )
+                {// (Value is an array)
+                    // (Getting the value)
+                    $num_args = count( $args[0] );
+
+                    for ( $i = 0; $i < $num_args; $i++)
+                    {// Iterating each index
+                        // (Getting the value)
+                        $expr = $args[0][$i];
+
+
+
+                        // (Getting the value)
+                        $length = count( $expr );
+
+                        switch ( $length )
+                        {
+                            case 3:// (Format = COV)
+                                // (Getting the values)
+                                [ $column, $operator, $value ] = $expr;
+
+                                // (Composing the condition)
+                                $this->condition->where_field( null, $column )->op( $operator )->value( $value );
+                            break;
+
+                            case 2:// (Format = CV)
+                                // (Getting the values)
+                                [ $column, $value ] = $expr;
+
+                                // (Composing the condition)
+                                $this->condition->where_field( null, $column )->op( '=' )->value( $value );
+                            break;
+
+                            case 1:// (Format = RAW)
+                                // (Composing the condition)
+                                $this->condition->where_raw( $expr );
+                            break;
+                        }
+
+
+
+                        if ( $i < $num_args - 1 )
+                        {// (Index is not the last)
+                            // (Composing the condition)
+                            $this->condition->and();
+                        }
+                    }
+                }
+                else
+                {// (Value is not an array)
+                    // (Composing the condition)
+                    $this->condition->where_raw( $args[0] );
+                }
+            break;
+        }
+
+
+
+        // (Composing the condition)
+        $this->condition->where_raw(')');
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function or ()
+    {
+        // (Composing the condition)
+        $this->condition->or();
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     # Returns [string]
     public function __toString ()
     {
