@@ -134,14 +134,22 @@ class Condition
     {
         if ( !$raw )
         {// (Value is not raw)
-            // (Getting the value)
-            $value = $this->connection->normalize_value($value);
+            if ( is_array( $value ) )
+            {// Value is an array
+                // (Getting the value)
+                $value = '(' . implode( ',', array_map( function ($entry) { return $this->connection->normalize_value( $entry ); }, $value ) ) . ')';
+            }
+            else
+            {// (Value is not an array)
+                // (Getting the value)
+                $value = $this->connection->normalize_value( $value );
+            }
         }
 
 
 
         // (Appending the value)
-        $this->where_raw($value);
+        $this->where_raw( $value );
 
 
 
