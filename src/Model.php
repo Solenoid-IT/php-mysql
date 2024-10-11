@@ -662,6 +662,20 @@ class Model
 
 
 
+    # Returns [self]
+    public function bind (array &$values, array $fields = [])
+    {
+        // (Getting the value)
+        $values = $this->find( $fields );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     # Returns [string]
     public function __toString ()
     {
