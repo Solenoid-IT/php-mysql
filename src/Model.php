@@ -663,7 +663,7 @@ class Model
 
 
     # Returns [self]
-    public function bind (array &$values, array $fields = [])
+    public function bind (?array &$values, array $fields = [])
     {
         // (Getting the value)
         $values = $this->find( $fields );
