@@ -609,7 +609,7 @@ class Model
 
                             case 1:// (Format = RAW)
                                 // (Composing the condition)
-                                $this->condition->where_raw( $expr );
+                                $this->condition->where_raw( $expr[0] );
                             break;
                         }
 
