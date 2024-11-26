@@ -12,7 +12,14 @@ class ConnectionStore
 
 
 
-    # Returns [self]
+    # Returns [Connection|false]
+    public static function get (string $id)
+    {
+        // Returning the value
+        return self::$connections[ $id ] ?? false;
+    }
+
+    # Returns [void]
     public static function set (string $id, Connection &$connection)
     {
         // (Getting the value)

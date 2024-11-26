@@ -23,7 +23,7 @@ class User extends Model
     private function __construct ()
     {
         // (Getting the value)
-        $connection = ConnectionStore::$connections[ $this->conn_id ];
+        $connection = ConnectionStore::get( $this->conn_id );
 
         if ( !$connection )
         {// Value not found
