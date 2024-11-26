@@ -676,6 +676,62 @@ class Model
 
 
 
+    /*
+
+    # Returns [self|false]
+    public static function fetch ()
+    {
+        if ( get_class() === get_called_class() ) return false;
+
+
+
+        // (Getting the values)
+        $class_path = get_class();
+        $class_vars = get_class_vars( $class_path );
+
+
+
+        // (Getting the value)
+        $connection = ConnectionStore::$connections[ $class_vars['conn_id'] ];
+
+        if ( !$connection )
+        {// Value not found
+            // (Getting the value)
+            $message = "Connection '" . $class_vars['conn_id'] . "' not found";
+
+            // Throwing an exception
+            throw new \Exception($message);
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        // Returning the value
+        return new ( $class_path )( $connection, $class_vars['database'], $class_vars['table'] );
+    }
+
+
+
+    # Returns [void]
+    public function __call (string $name, array $args)
+    {
+        if ( get_class() === get_called_class() )
+        {// (Called from itself)
+            // Returning the value
+            return get_class();
+        }
+        else
+        {// (Called from child class)
+            return get_class();
+        }
+    }
+
+    */
+
+
+
     # Returns [string]
     public function __toString ()
     {
