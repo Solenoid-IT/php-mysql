@@ -66,7 +66,7 @@ class User extends Model
 
 
 
-echo json_encode( User::fetch()->where( 'age', '<=', 30 )->order( [ 'age', 'asc' ] )->list(), JSON_PRETTY_PRINT );
+echo json_encode( User::fetch()->where( 'age', '<=', 30 )->order( [ 'age' => SORT_ASC ] )->list(), JSON_PRETTY_PRINT );
 
 
 

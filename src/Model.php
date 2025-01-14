@@ -30,11 +30,12 @@ class Model
     public function __construct (Connection &$connection, string $database, string $table)
     {
         // (Getting the values)
-        $this->connection = &$connection;
-        $this->database   = str_replace( '`', '', $database );
-        $this->table      = str_replace( '`', '', $table );
+        $this->connection    = &$connection;
+        $this->database      = str_replace( '`', '', $database );
+        $this->table         = str_replace( '`', '', $table );
 
-        $this->condition  = null;
+        $this->condition     = null;
+        $this->order_columns = [];
     }
 
 
