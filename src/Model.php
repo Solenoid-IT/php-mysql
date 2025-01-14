@@ -22,6 +22,7 @@ class Model
     public string     $table;
 
     public ?Condition $condition;
+    public array      $order_columns;
 
 
 
@@ -369,12 +370,20 @@ class Model
 
 
 
+        foreach ( $this->order_columns as $column => $direction )
+        {// Processing each entry
+            // (Composing the query)
+            $query->order_by( null, $column, $direction );
+        }
+
+
+
         // Returning the value
         return $query->run()->set_typed_fields($typed_fields)->fetch_head($transform_record);
     }
 
     # Returns [array<Record>]
-    public function list (array $fields = [], bool $exclude_fields = false, array $order = [], bool $typed_fields = true, ?callable $transform_record = null)
+    public function list (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
     {
         // (Getting the value)
         $query = $this->query()->condition( $this->condition ?? ( new Condition() )->set_connection( $this->connection ) );
@@ -416,7 +425,7 @@ class Model
 
 
 
-        foreach ( $order as $column => $direction )
+        foreach ( $this->order_columns as $column => $direction )
         {// Processing each entry
             // (Composing the query)
             $query->order_by( null, $column, $direction );
@@ -729,6 +738,45 @@ class Model
     }
 
     */
+
+
+
+    # Returns [self]
+    public function order (array $columns)
+    {
+        // (Setting the value)
+        $this->order_columns = [];
+
+        foreach ( $columns as $column => $direction )
+        {// Processing each entry
+            switch ( $direction )
+            {
+                case SORT_ASC:
+                    // (Setting the value)
+                    $direction = 'ASC';
+                break;
+
+                case SORT_DESC:
+                    // (Setting the value)
+                    $direction = 'DESC';
+                break;
+
+                default:
+                    // (Getting the value)
+                    $direction = strtoupper( $direction );
+            }
+
+
+
+            // (Getting the value)
+            $this->order_columns[ $column ] = $direction;
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
 
 
 
