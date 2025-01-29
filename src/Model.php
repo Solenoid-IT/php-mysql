@@ -652,6 +652,18 @@ class Model
     }
 
     # Returns [self]
+    public function and ()
+    {
+        // (Composing the condition)
+        $this->condition->and();
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
     public function or ()
     {
         // (Composing the condition)
