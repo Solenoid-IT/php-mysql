@@ -806,7 +806,7 @@ class Connection
     public function get_last_insert_id ()
     {
         // Returning the value
-        return (string) mysqli_insert_id( $this->c );
+        return (string) ( $this->c ? mysqli_insert_id( $this->c ) : 0 );
     }
 
 
