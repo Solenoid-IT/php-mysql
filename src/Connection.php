@@ -16,13 +16,13 @@ class Connection
 
 
 
-    private ?string  $host;
-    private ?int     $port;
+    public ?string  $host;
+    public ?int     $port;
 
-    private ?string  $username;
-    private ?string  $password;
+    public ?string  $username;
+    public ?string  $password;
 
-    private ?string  $database;
+    public ?string  $database;
 
     private ?string  $socket;
 
