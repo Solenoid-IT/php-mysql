@@ -68,7 +68,8 @@ class Cursor
         MYSQLI_TYPE_TIMESTAMP =>
         [
             'type' => 'TIMESTAMP',
-            'cast' => 'string:iso-8601'
+            #'cast' => 'string:iso-8601'
+            'cast' => 'string'
         ],
 
         MYSQLI_TYPE_LONGLONG =>
@@ -86,7 +87,8 @@ class Cursor
         MYSQLI_TYPE_DATE =>
         [
             'type' => 'DATE',
-            'cast' => 'string:iso-8601'
+            #'cast' => 'string:iso-8601'
+            'cast' => 'string'
         ],
 
         MYSQLI_TYPE_TIME =>
@@ -98,7 +100,8 @@ class Cursor
         MYSQLI_TYPE_DATETIME =>
         [
             'type' => 'DATETIME',
-            'cast' => 'string:iso-8601'
+            #'cast' => 'string:iso-8601'
+            'cast' => 'string'
         ],
 
         MYSQLI_TYPE_YEAR =>
@@ -110,7 +113,8 @@ class Cursor
         MYSQLI_TYPE_NEWDATE =>
         [
             'type' => 'DATE',
-            'cast' => 'string:iso-8601'
+            #'cast' => 'string:iso-8601'
+            'cast' => 'string'
         ],
 
         MYSQLI_TYPE_INTERVAL =>
