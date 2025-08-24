@@ -392,6 +392,23 @@ class Condition
 
 
 
+    # Returns [self]
+    public function fill (array $values)
+    {
+        foreach ( $values as $k => $v )
+        {// Processing each entry
+            // (Getting the value)
+            $this->value = preg_replace( "/\{\s*$k\s*\}/", $this->connection->normalize_value( $v ), $this->value );
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     # Returns [string]
     public function __toString ()
     {
