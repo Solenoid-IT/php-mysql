@@ -164,14 +164,7 @@ class Connection
 
 
         // (Triggering the event)
-        $this->trigger_event
-        (
-            'open',
-            [
-                'connection' => $this
-            ]
-        )
-        ;
+        $this->trigger_event( 'open', [ 'connection' => $this ] );
 
 
 
@@ -196,14 +189,7 @@ class Connection
 
 
         // (Triggering the event)
-        $this->trigger_event
-        (
-            'close',
-            [
-                'connection' => $this
-            ]
-        )
-        ;
+        $this->trigger_event( 'close', [ 'connection' => $this ] );
 
 
 
@@ -593,15 +579,7 @@ class Connection
 
 
         // (Triggering the event)
-        $this->trigger_event
-        (
-            'before-execute',
-            [
-                'connection' => $this,
-                'query'      => $query
-            ]
-        )
-        ;
+        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $query ] );
 
 
 
@@ -634,34 +612,8 @@ class Connection
 
         if ( $result === false )
         {// (Unable to execute the query)
-            /*
-
-            if ( self::DEBUG_MODE )
-            {// Value is true
-                // (Getting the value)
-                $message = "Unable to execute the query '$query' :: " . $this->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
-            }
-
-            */
-
-
-
             // (Triggering the event)
-            $this->trigger_event
-            (
-                'error',
-                [
-                    'connection' => $this,
-                    'query'      => $query
-                ]
-            )
-            ;
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $query ] );
 
 
 
@@ -766,15 +718,7 @@ class Connection
 
 
             // (Triggering the event)
-            $this->trigger_event
-            (
-                'error',
-                [
-                    'connection' => $this,
-                    'query'      => $query
-                ]
-            )
-            ;
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $query ] );
 
 
 
@@ -831,7 +775,7 @@ class Connection
     # Returns [self]
     public function trigger_event (string $type, array $data = [])
     {
-        foreach ($this->event_listeners[ $type ] as $event_listener)
+        foreach ( $this->event_listeners[ $type ] as $event_listener )
         {// Processing each entry
             // (Calling the function)
             $event_listener( $data );
