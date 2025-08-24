@@ -398,7 +398,7 @@ class Condition
         foreach ( $values as $k => $v )
         {// Processing each entry
             // (Getting the value)
-            $this->value = preg_replace( "/\{\s*$k\s*\}/", $this->connection->normalize_value( $v ), $this->value );
+            $this->value = str_replace( ":$k", $this->connection->normalize_value( $v ), $this->value );
         }
 
 
