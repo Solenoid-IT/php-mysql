@@ -605,6 +605,11 @@ class Connection
 
 
 
+        // (Triggering the event)
+        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $query ] );
+
+
+
         if ( $query_debug !== '' )
         {// Value found
             // (Getting the value)
@@ -812,10 +817,10 @@ class Connection
 
 
     # Returns [self]
-    public function add_event_listener (string $type, callable $callback)
+    public function on (string $event_type, callable $callback)
     {
         // (Appending the value)
-        $this->event_listeners[ $type ][] = $callback;
+        $this->event_listeners[ $event_type ][] = $callback;
 
 
 
