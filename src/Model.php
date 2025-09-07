@@ -464,6 +464,15 @@ class Model
         return $ids;
     }
 
+    # Returns [int]
+    public function last_id ()
+    {
+        // Returning the value
+        return (int) $this->connection->get_last_insert_id();
+    }
+
+
+
     # Returns [self|false]
     public function empty ()
     {
