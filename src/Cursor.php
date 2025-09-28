@@ -117,11 +117,15 @@ class Cursor
             'cast' => 'string'
         ],
 
+        /* php8.4 bugfix
+
         MYSQLI_TYPE_INTERVAL =>
         [
             'type' => 'INTERVAL',
             'cast' => 'undefined'
         ],
+
+        */
 
         MYSQLI_TYPE_ENUM =>
         [
