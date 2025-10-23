@@ -471,6 +471,7 @@ class Connection
             break;
 
             case 'string':
+            case 'object':
                 // (Getting the value)
                 $value = $this->sanitize_text( $value );
 
