@@ -16,6 +16,8 @@ class Condition
 {
     private string     $value;
 
+    private string     $current_op;
+
 
 
     public Connection  $connection;
@@ -120,8 +122,8 @@ class Condition
     # Returns [self]
     public function op (string $operator)
     {
-        // (Appending the value)
-        $this->where_raw(" $operator ");
+        // (Getting the value)
+        $this->current_op = $operator;
 
 
 
@@ -141,10 +143,29 @@ class Condition
             }
             else
             {// (Value is not an array)
+                if ( $value === null )
+                {// Match OK
+                    if ( $this->current_op === '=' )
+                    {// Match OK
+                        // (Setting the value)
+                        $this->current_op = 'IS';
+                    }
+                }
+
+
+
                 // (Getting the value)
                 $value = $this->connection->normalize_value( $value );
             }
         }
+
+
+
+        // (Appending the value)
+        $this->where_raw( ' ' . $this->current_op . ' ' );
+
+        // (Setting the value)
+        $this->current_op = '';
 
 
 
