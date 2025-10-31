@@ -37,6 +37,8 @@ class Model
         $this->table         = str_replace( '`', '', $table );
 
         $this->condition     = null;
+        
+        $this->group_columns = [];
         $this->order_columns = [];
     }
 
