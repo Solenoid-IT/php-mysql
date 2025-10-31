@@ -22,6 +22,8 @@ class Model
     public string     $table;
 
     public ?Condition $condition;
+
+    public array      $group_columns;
     public array      $order_columns;
 
 
@@ -426,6 +428,14 @@ class Model
 
 
 
+        foreach ( $this->group_columns as $column )
+        {// Processing each entry
+            // (Composing the query)
+            $query->group_by( null, $column );
+        }
+
+
+
         foreach ( $this->order_columns as $column => $direction )
         {// Processing each entry
             // (Composing the query)
@@ -698,6 +708,26 @@ class Model
     {
         // (Getting the value)
         $object = $this->find( $fields );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function group (array $columns)
+    {
+        // (Setting the value)
+        $this->group_columns = [];
+
+        foreach ( $columns as $column )
+        {// Processing each entry
+            // (Appending the value)
+            $this->group_columns[] = $column;
+        }
 
 
 
