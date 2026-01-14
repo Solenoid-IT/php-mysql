@@ -26,6 +26,9 @@ class Model
     public array      $group_columns;
     public array      $order_columns;
 
+    public int        $limit;
+    public ?int       $offset;
+
 
 
     # Returns [self]
@@ -446,6 +449,20 @@ class Model
 
 
 
+        if ( isset( $this->limit ) )
+        {// Value is set
+            // (Composing the query)
+            $query->limit( $this->limit );
+        }
+
+        if ( isset( $this->offset ) )
+        {// Value is set
+            // (Composing the query)
+            $query->offset( $this->offset );
+        }
+
+
+
         // Returning the value
         return $query->run()->set_typed_fields($typed_fields)->list($transform_record);
     }
@@ -783,6 +800,21 @@ class Model
     {
         // (Filling the values)
         $this->condition->fill( $values );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
+    public function paginate (int $limit, ?int $offset = null)
+    {
+        // (Getting the values)
+        $this->limit  = $limit;
+        $this->offset = $offset;
 
 
 
