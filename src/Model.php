@@ -394,7 +394,12 @@ class Model
     public function list (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
     {
         // (Getting the value)
-        $query = $this->query()->condition( $this->condition ?? ( new Condition() )->set_connection( $this->connection ) );
+        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
+
+
+
+        // (Getting the value)
+        $query = $this->query()->condition( $condition );
 
         
 
@@ -464,7 +469,7 @@ class Model
 
 
         // Returning the value
-        return $query->run()->set_typed_fields($typed_fields)->list($transform_record);
+        return $query->run()->set_typed_fields( $typed_fields )->list( $transform_record );
     }
 
 
@@ -808,6 +813,18 @@ class Model
     }
 
 
+
+    # Returns [self]
+    public function search (string $value, string $format = '%V%', array $fields)
+    {
+        // (Getting the value)
+        $this->condition->search( $value, $format, $fields );
+
+
+
+        // Returning the value
+        return $this;
+    }
 
     # Returns [self]
     public function paginate (int $limit, ?int $offset = null)
