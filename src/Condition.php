@@ -368,6 +368,59 @@ class Condition
 
 
     # Returns [self]
+    public function search (string $value, string $format = '%V%', array $fields)
+    {
+        // (Getting the value)
+        $num_fields = count( $fields );
+
+
+
+        // (Composing the condition)
+        $this->where_raw( '( ' );
+
+
+
+        foreach ( $fields as $i => $field )
+        {// Processing each entry
+            if ( is_array( $field ) )
+            {// (Value is an array)
+                // (Getting the values)
+                $table_alias = $field[0];
+                $field       = $field[1];
+            }
+            else
+            if ( is_string( $field ) )
+            {// (Value is a string)
+                // (Setting the value)
+                $table_alias = null;
+            }
+
+
+
+            // (Composing the condition)
+            $this->where_field( $table_alias, $field )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
+
+            if ( $i < $num_fields - 1 )
+            {// (Index is not the last)
+                // (Composing the condition)
+                $this->or();
+            }
+        }
+
+
+
+        // (Composing the condition)
+        $this->where_raw( ' )' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
     public function between (mixed $min, mixed $max)
     {
         // (Composing the query)
