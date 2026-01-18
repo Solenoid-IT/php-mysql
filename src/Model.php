@@ -343,6 +343,9 @@ class Model
 
 
 
+        // (Getting the value)
+        $fields = array_unique( $fields );
+
         if ( $fields )
         {// Value is not empty
             if ( $exclude_fields )
@@ -402,6 +405,9 @@ class Model
         $query = $this->query()->condition( $condition );
 
         
+
+        // (Getting the value)
+        $fields = array_unique( $fields );
 
         if ( $fields )
         {// Value is not empty
