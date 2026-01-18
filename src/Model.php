@@ -324,50 +324,28 @@ class Model
 
 
     # Returns [int]
-    public function count ()
+    public function count (?string $field = null)
     {
         // (Getting the value)
         $query = $this->query()->condition( $this->condition );
 
 
 
-        foreach ( $this->group_columns as $column )
-        {// Processing each entry
+        if ( $field )
+        {// Value found
             // (Composing the query)
-            $query->group_by( null, $column );
+            $query->count_field( null, $field );
         }
-
-
-
-        foreach ( $this->order_columns as $column => $direction )
-        {// Processing each entry
+        else
+        {// Value not found
             // (Composing the query)
-            $query->order_by( null, $column, $direction );
+            $query->count_all( null, 'num_records' );
         }
-
-
-
-        if ( isset( $this->limit ) )
-        {// Value is set
-            // (Composing the query)
-            $query->limit( $this->limit );
-        }
-
-        if ( isset( $this->offset ) )
-        {// Value is set
-            // (Composing the query)
-            $query->offset( $this->offset );
-        }
-
-
-
-        // (Composing the query)
-        $query->count_all( null, 'num_records' );
 
 
 
         // Returning the value
-        return (int) $query->run()->set_mode('value')->fetch_head();
+        return (int) $query->run()->set_mode( 'value' )->fetch_head();
     }
 
     # Returns [Record|false]
