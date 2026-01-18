@@ -327,7 +327,42 @@ class Model
     public function count ()
     {
         // (Getting the value)
-        $query = $this->query()->condition( $this->condition )->count_all( null, 'num_records' );
+        $query = $this->query()->condition( $this->condition );
+
+
+
+        foreach ( $this->group_columns as $column )
+        {// Processing each entry
+            // (Composing the query)
+            $query->group_by( null, $column );
+        }
+
+
+
+        foreach ( $this->order_columns as $column => $direction )
+        {// Processing each entry
+            // (Composing the query)
+            $query->order_by( null, $column, $direction );
+        }
+
+
+
+        if ( isset( $this->limit ) )
+        {// Value is set
+            // (Composing the query)
+            $query->limit( $this->limit );
+        }
+
+        if ( isset( $this->offset ) )
+        {// Value is set
+            // (Composing the query)
+            $query->offset( $this->offset );
+        }
+
+
+
+        // (Composing the query)
+        $query->count_all( null, 'num_records' );
 
 
 
@@ -381,6 +416,14 @@ class Model
 
 
 
+        foreach ( $this->group_columns as $column )
+        {// Processing each entry
+            // (Composing the query)
+            $query->group_by( null, $column );
+        }
+
+
+
         foreach ( $this->order_columns as $column => $direction )
         {// Processing each entry
             // (Composing the query)
@@ -389,8 +432,22 @@ class Model
 
 
 
+        if ( isset( $this->limit ) )
+        {// Value is set
+            // (Composing the query)
+            $query->limit( $this->limit );
+        }
+
+        if ( isset( $this->offset ) )
+        {// Value is set
+            // (Composing the query)
+            $query->offset( $this->offset );
+        }
+
+
+
         // Returning the value
-        return $query->run()->set_typed_fields($typed_fields)->fetch_head($transform_record);
+        return $query->run()->set_typed_fields( $typed_fields )->fetch_head( $transform_record );
     }
 
     # Returns [array<Record>]
