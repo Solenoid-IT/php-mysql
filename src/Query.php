@@ -230,7 +230,7 @@ class Query
     public function group_by (?string $table_alias = null, string $column)
     {
         // (Appending the value)
-        $this->group[] = ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
+        $this->group[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
 
 
 
@@ -242,7 +242,7 @@ class Query
     public function order_by (?string $table_alias = null, string $column, string $direction)
     {
         // (Appending the value)
-        $this->order[] = ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
+        $this->order[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
 
 
 
@@ -320,7 +320,7 @@ class Query
     public function select_field (?string $table_alias = null, string $column, ?string $name = null)
     {
         // (Appending the value)
-        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
 
 
 
@@ -332,7 +332,7 @@ class Query
     public function select_all (?string $table_alias = null)
     {
         // (Appending the value)
-        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '*' );
+        $this->select_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '*' );
 
 
 
@@ -344,7 +344,7 @@ class Query
     public function select_agg (string $type, ?string $table_alias = null, string $column, ?string $name = null)
     {
         // (Appending the value)
-        $this->select_raw( $type . '( ' . ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+        $this->select_raw( $type . '( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
 
 
 
@@ -358,7 +358,7 @@ class Query
     public function count_all (?string $table_alias = null, ?string $name = null)
     {
         // (Appending the value)
-        $this->select_raw( 'COUNT( ' . ( $table_alias ? $this->connection->sanitize_text($table_alias) . '.' : '' ) . '*' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
+        $this->select_raw( 'COUNT( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '*' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
 
 
 
@@ -377,7 +377,7 @@ class Query
             $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
 
             // Throwing an exception
-            throw new \Exception($message);
+            throw new \Exception( $message );
 
             // Returning the value
             return false;
@@ -407,21 +407,41 @@ class Query
 
 
 
+        // (Setting the value)
+        $command = '';
+
+
+
+        // (Appending the value)
+        $command .= "SELECT $distinct\n\t$projection\nFROM\n\t$source\nWHERE\n\t$condition\n";
+
+        if ( $this->group )
+        {// Value is not empty
+            // (Appending the value)
+            $command .= "$group_by\n";
+        }
+
+        if ( $this->order )
+        {// Value is not empty
+            // (Appending the value)
+            $command .= "$order_by\n";
+        }
+
+        if ( $this->limit )
+        {// Value found
+            // (Appending the value)
+            $command .= "$limit\n";
+        }
+
+
+
+        // (Appending the value)
+        $command .= ';';
+
+
+
         // Returning the value
-        return
-            <<<EOD
-            SELECT $distinct
-                $projection
-            FROM
-                $source
-            WHERE
-                $condition
-            $group_by
-            $order_by
-            $limit
-            ;
-            EOD
-        ;
+        return $command;
     }
 }
 
