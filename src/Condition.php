@@ -418,6 +418,50 @@ class Condition
         return $this;
     }
 
+    # Returns [self]
+    public function search_values (array $values, string $format = '%V%')
+    {
+        // (Getting the value)
+        $num_fields = count( array_keys( $values ) );
+
+
+
+        // (Composing the condition)
+        $this->where_raw( '( ' );
+
+
+
+        // (Setting the value)
+        $i = -1;
+
+        foreach ( $values as $field => $value )
+        {// Processing each entry
+            // (Incrementing the value)
+            $i += 1;
+
+
+
+            // (Composing the condition)
+            $this->where_field( null, $field )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
+
+            if ( $i < $num_fields - 1 )
+            {// (Index is not the last)
+                // (Composing the condition)
+                $this->and();
+            }
+        }
+
+
+
+        // (Composing the condition)
+        $this->where_raw( ' )' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
 
 
     # Returns [self]

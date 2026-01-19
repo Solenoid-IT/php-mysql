@@ -868,6 +868,20 @@ class Model
     }
 
     # Returns [self]
+    public function search_values (array $values, string $format = '%V%')
+    {
+        // (Getting the value)
+        $this->condition->search_values( $values, $format );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
     public function paginate (int $limit, ?int $offset = null)
     {
         // (Getting the values)
