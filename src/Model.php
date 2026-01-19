@@ -856,8 +856,13 @@ class Model
 
 
     # Returns [self]
-    public function search (string $value, string $format = '%V%', array $fields)
+    public function search (string $value, string $format = '%V%', array $fields = [])
     {
+        // (Getting the value)
+        $fields = $fields ? $fields : array_keys( $this->describe() );
+
+
+
         // (Getting the value)
         $this->condition->search( $value, $format, $fields );
 

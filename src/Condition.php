@@ -371,6 +371,11 @@ class Condition
     public function search (string $value, string $format = '%V%', array $fields)
     {
         // (Getting the value)
+        $fields = array_unique( $fields );
+
+
+
+        // (Getting the value)
         $num_fields = count( $fields );
 
 
