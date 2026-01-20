@@ -163,7 +163,7 @@ class Condition
 
 
         // (Composing the condition)
-        $this->op( $operator );
+        $this->where_raw( " $operator " );
 
 
 
@@ -178,7 +178,7 @@ class Condition
         foreach ( $values as $i => $value )
         {// Processing each entry
             // (Composing the condition)
-            $this->value( $value );
+            $this->where_raw( $this->connection->normalize_value( $value ) );
 
             if ( $i < $num_values - 1 )
             {// (Index is not the last)
