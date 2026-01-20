@@ -120,6 +120,83 @@ class Condition
     }
 
     # Returns [self]
+    public function where_tuple (array $fields, string $operator, array $values)
+    {
+        // (Setting the value)
+        $num_fields = count( $fields );
+
+
+
+        // (Composing the condition)
+        $this->where_raw( '(' );
+
+        foreach ( $fields as $i => $field )
+        {// Processing each entry
+            if ( is_array( $field ) )
+            {// (Value is an array)
+                // (Getting the values)
+                $table_alias = $field[0];
+                $field       = $field[1];
+            }
+            else
+            if ( is_string( $field ) )
+            {// (Value is a string)
+                // (Setting the value)
+                $table_alias = null;
+            }
+
+
+
+            // (Composing the condition)
+            $this->where_field( $table_alias, $field );
+
+            if ( $i < $num_fields - 1 )
+            {// (Index is not the last)
+                // (Composing the condition)
+                $this->where_raw( ', ' );
+            }
+        }
+
+        // (Composing the condition)
+        $this->where_raw( ')' );
+
+
+
+        // (Composing the condition)
+        $this->op( $operator );
+
+
+
+        // (Getting the value)
+        $num_values = count( $values );
+
+
+
+        // (Composing the condition)
+        $this->where_raw( '(' );
+
+        foreach ( $values as $i => $value )
+        {// Processing each entry
+            // (Composing the condition)
+            $this->value( $value );
+
+            if ( $i < $num_values - 1 )
+            {// (Index is not the last)
+                // (Composing the condition)
+                $this->where_raw( ', ' );
+            }
+        }
+
+        // (Composing the condition)
+        $this->where_raw( ')' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
     public function op (string $operator)
     {
         // (Getting the value)

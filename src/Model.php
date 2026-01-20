@@ -736,6 +736,18 @@ class Model
     }
 
     # Returns [self]
+    public function where_tuple (array $fields, string $operator, array $values)
+    {
+        // (Composing the condition)
+        $this->condition->where_tuple( $fields, $operator, $values );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
     public function and ()
     {
         // (Composing the condition)
