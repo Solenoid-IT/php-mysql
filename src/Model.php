@@ -913,6 +913,25 @@ class Model
 
 
 
+    public static function get_keys (string|self $model) : array
+    {
+        // (Setting the value)
+        $keys = [];
+
+        foreach ( ( new \ReflectionClass( $model ) )->getAttributes( Key::class ) as $attribute )
+        {// Processing each entry
+            // (Appending the value)
+            $keys[] = $attribute->newInstance();
+        }
+
+
+
+        // Returning the value
+        return $keys;
+    }
+
+
+
     # Returns [string]
     public function __toString ()
     {
