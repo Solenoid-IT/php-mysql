@@ -18,6 +18,7 @@ class Query
     private string     $source;
     private Condition  $condition;
     private array      $group;
+    private string     $having_raw;
     private array      $order;
     private string     $limit;
 
@@ -239,6 +240,20 @@ class Query
     }
 
     # Returns [self]
+    public function having (string $expression)
+    {
+        // (Getting the value)
+        $this->having_raw = $expression;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    # Returns [self]
     public function order_by (?string $table_alias = null, string $column, string $direction)
     {
         // (Appending the value)
@@ -431,6 +446,12 @@ class Query
         {// Value is not empty
             // (Appending the value)
             $command .= "$group_by\n";
+        }
+
+        if ( $this->having_raw )
+        {// Value found
+            // (Appending the value)
+            $command .= "HAVING\n\t$this->having_raw\n";
         }
 
         if ( $this->order )

@@ -26,6 +26,8 @@ class Model
     public array      $group_columns;
     public array      $order_columns;
 
+    public string     $having_raw;
+
     public int        $limit;
     public ?int       $offset;
 
@@ -400,6 +402,12 @@ class Model
             $query->group_by( null, $column );
         }
 
+        if ( $this->having_raw )
+        {// Value found
+            // (Composing the query)
+            $query->having( $this->having_raw );
+        }
+
 
 
         foreach ( $this->order_columns as $column => $direction )
@@ -483,6 +491,12 @@ class Model
         {// Processing each entry
             // (Composing the query)
             $query->group_by( null, $column );
+        }
+
+        if ( $this->having_raw )
+        {// Value found
+            // (Composing the query)
+            $query->having( $this->having_raw );
         }
 
 
@@ -805,6 +819,18 @@ class Model
             // (Appending the value)
             $this->group_columns[] = $column;
         }
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    # Returns [self]
+    public function having (string $expression)
+    {
+        // (Getting the value)
+        $this->having_raw = $expression;
 
 
 
