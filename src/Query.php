@@ -39,6 +39,7 @@ class Query
         // (Setting the values)
         $this->source     = '';
         $this->group      = [];
+        $this->having_raw = '';
         $this->order      = [];
         $this->limit      = '';
 

@@ -45,6 +45,8 @@ class Model
         
         $this->group_columns = [];
         $this->order_columns = [];
+
+        $this->having_raw    = '';
     }
 
 
