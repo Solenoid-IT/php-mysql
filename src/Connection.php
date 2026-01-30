@@ -735,11 +735,53 @@ class Connection
 
 
 
+    public function run (string $command, array $values = []) : self|false
+    {
+        if ( $this->mysqli_result )
+        {// Value found
+            // (Freeing the memory)
+            mysqli_free_result( $this->mysqli_result );
+        }
+
+
+
+        if ( !mysqli_real_query( $this->c, $this->fill_vars( $command, $values ) ) )
+        {// (Unable to execute the command)
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $result = mysqli_use_result( $this->c );
+
+        if ( $result === false )
+        {// (Unable to get the result)
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $this->mysqli_result = $result;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     # Returns [Cursor]
     public function fetch_cursor ()
     {
-        // (Creating a Cursor)
+        // (Getting the value)
         $cursor = new Cursor( $this->mysqli_result );
+
+
 
         // (Setting the connection)
         $cursor->set_connection( $this );

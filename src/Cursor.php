@@ -4,8 +4,7 @@
 
 namespace Solenoid\MySQL;
 
-
-
+use mysqli;
 use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Record;
 
@@ -209,7 +208,7 @@ class Cursor
 
 
 
-    private \mysqli_result    $mysqli_result;
+    private ?\mysqli_result   $mysqli_result;
 
     private string                     $mode;
 
@@ -709,6 +708,37 @@ class Cursor
 
         // Returning the value
         return $schema;
+    }
+
+
+
+    public function read () : Record|string|null|false
+    {
+        switch ( $this->mode )
+        {
+            case 'record':
+                // (Getting the value)
+                $result = $this->fetch_record();
+            break;
+
+            case 'value':
+                // (Getting the value)
+                $result = $this->fetch_value();
+            break;
+        }
+
+
+
+        if ( $result === false )
+        {// (Cursor is at the end)
+            // (Freeing the memory)
+            mysqli_free_result( $this->mysqli_result );
+        }
+
+
+
+        // Returning the value
+        return $result;
     }
 
 

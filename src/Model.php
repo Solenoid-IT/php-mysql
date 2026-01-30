@@ -15,6 +15,8 @@ class Model
 {
     private int $lid;
 
+    private string $command;
+
 
 
     public Connection $connection;
@@ -527,6 +529,109 @@ class Model
 
         // Returning the value
         return $query->run()->set_typed_fields( $typed_fields )->list( $transform_record );
+    }
+
+
+
+    public function fields (array $fields = [], bool $exclude_fields = false) : self
+    {
+        // (Getting the value)
+        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
+
+
+
+        // (Getting the value)
+        $query = $this->query()->condition( $condition );
+
+        
+
+        // (Getting the value)
+        $fields = array_unique( $fields );
+
+        if ( $fields )
+        {// Value is not empty
+            if ( $exclude_fields )
+            {// (Fields are excluded)
+                // (Getting the value)
+                $table_fields = array_keys( $this->describe() );
+
+
+
+                // (Getting the value)
+                $include_fields = array_diff( $table_fields, $fields );
+
+                foreach ( $include_fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+            else
+            {// (Fields are included)
+                foreach ( $fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+        }
+        else
+        {// Value is empty
+            // (Composing the query)
+            $query->select_all();
+        }
+
+
+
+        foreach ( $this->group_columns as $column )
+        {// Processing each entry
+            // (Composing the query)
+            $query->group_by( null, $column );
+        }
+
+        if ( $this->having_raw )
+        {// Value found
+            // (Composing the query)
+            $query->having( $this->having_raw );
+        }
+
+
+
+        foreach ( $this->order_columns as $column => $direction )
+        {// Processing each entry
+            // (Composing the query)
+            $query->order_by( null, $column, $direction );
+        }
+
+
+
+        if ( isset( $this->limit ) )
+        {// Value is set
+            // (Composing the query)
+            $query->limit( $this->limit );
+        }
+
+        if ( isset( $this->offset ) )
+        {// Value is set
+            // (Composing the query)
+            $query->offset( $this->offset );
+        }
+
+
+
+        // (Getting the value)
+        $this->command = $query;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    public function read () : Record|string|null|false
+    {
+        // Returning the value
+        return $this->connection->run( $this->command )->fetch_cursor()->set_typed_fields( true )->read();
     }
 
 
