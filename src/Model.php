@@ -183,12 +183,12 @@ class Model
 
 
             // (Getting the value)
-            $default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
+            #$default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
 
 
 
             // (Getting the value)
-            $related_model = new $relation->model( $this->connection, $default_props['database'], $default_props['table'] );
+            $related_model = new $relation->model();
 
 
 
