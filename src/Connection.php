@@ -538,7 +538,7 @@ class Connection
 
 
     # Returns [self|false] | Throws [Exception]
-    public function execute (string $query, array $kv_data = [], ?string &$query_debug = '')
+    public function execute (string $command, array $values = [], ?string &$query_debug = '')
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -563,9 +563,9 @@ class Connection
 
 
         // (Filling the variables)
-        $query = $this->fill_vars( $query, $kv_data );
+        $command = $this->fill_vars( $command, $values );
 
-        if ( $query === false )
+        if ( $command === false )
         {// (Unable to fill the variables)
             // (Setting the value)
             $message = "Unable to fill the variables";
@@ -580,19 +580,19 @@ class Connection
 
 
         // (Triggering the event)
-        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $query ] );
+        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $command ] );
 
 
 
         // (Triggering the event)
-        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $query ] );
+        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $command ] );
 
 
 
         if ( $query_debug !== '' )
         {// Value found
             // (Getting the value)
-            $query_debug = $query;
+            $query_debug = $command;
 
 
 
@@ -603,18 +603,18 @@ class Connection
         if ( $this->debug )
         {// (Debug is enabled)
             // (Appending the value)
-            $this->queries[] = $query;
+            $this->queries[] = $command;
         }
 
 
 
         // (Getting the result)
-        $result = mysqli_query( $this->c, $query );
+        $result = mysqli_query( $this->c, $command );
 
         if ( $result === false )
         {// (Unable to execute the query)
             // (Triggering the event)
-            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $query ] );
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $command ] );
 
 
 
@@ -733,14 +733,28 @@ class Connection
         return $this;
     }
 
-
-
-    public function run (string $command, array $values = []) : self|false
+    public function execute_stream (string $command, array $values = []) : self|false
     {
         if ( $this->mysqli_result )
         {// Value found
             // (Freeing the memory)
             mysqli_free_result( $this->mysqli_result );
+        }
+
+
+
+        // (Getting the value)
+        $data =
+        [
+            'connection'    => $this,
+            'command'       => $command
+        ]
+        ;
+
+        foreach ( [ 'before-execute', 'command' ] as $type )
+        {// Processing each entry
+            // (Triggering the event)
+            $this->trigger_event( $type, $data );
         }
 
 

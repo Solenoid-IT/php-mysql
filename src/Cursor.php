@@ -4,9 +4,11 @@
 
 namespace Solenoid\MySQL;
 
-use mysqli;
+
+
 use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Record;
+use \Solenoid\MySQL\Model;
 
 use \Solenoid\Vector\Vector;
 
@@ -216,9 +218,14 @@ class Cursor
 
     private bool               $typed_fields;
 
+    private ?Model                    $model;
 
 
-    # Returns [self]
+
+    private static array $cached_fields = [];
+
+
+
     public function __construct (\mysqli_result $mysqli_result)
     {
         // (Getting the value)
@@ -233,12 +240,16 @@ class Cursor
 
         // (Setting the mode)
         $this->set_mode( 'record' );
+
+
+
+        // (Setting the value)
+        $this->model = null;
     }
 
 
 
-    # Returns [self]
-    public function set_connection (Connection &$connection)
+    public function set_connection (Connection &$connection) : self
     {
         // (Getting the value)
         $this->connection = &$connection;
@@ -249,8 +260,7 @@ class Cursor
         return $this;
     }
 
-    # Returns [self]
-    public function set_typed_fields (bool $value)
+    public function set_typed_fields (bool $value) : self
     {
         // (Getting the value)
         $this->typed_fields = $value;
@@ -261,10 +271,20 @@ class Cursor
         return $this;
     }
 
+    public function set_model (Model $model) : self
+    {
+        // (Getting the value)
+        $this->model = $model;
 
 
-    # Returns [int]
-    public function count ()
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    public function count () : int
     {
         // Returning the value
         return mysqli_num_rows( $this->mysqli_result );
@@ -272,8 +292,7 @@ class Cursor
 
 
 
-    # Returns [bool]
-    public function is_empty ()
+    public function is_empty () : bool
     {
         // Returning the value
         return $this->count() === 0;
@@ -281,8 +300,7 @@ class Cursor
 
 
 
-    # Returns [self|false] | Throws [Exception]
-    public function set_mode (string $mode)
+    public function set_mode (string $mode) : self|false
     {
         switch ( $mode )
         {
@@ -315,8 +333,7 @@ class Cursor
 
 
 
-    # Returns [Record|false|null] | Throws [Exception]
-    public function fetch_record (?callable $transform = null)
+    public function fetch_record (?callable $transform = null) : Record|array|false|null
     {
         if ( $transform === null ) $transform = function ($record) { return $record; };
 
@@ -353,12 +370,20 @@ class Cursor
 
 
             // (Getting the value)
-            $fields = mysqli_fetch_fields( $this->mysqli_result );
+            $fields = self::$cached_fields[ $this->model ] ?? mysqli_fetch_fields( $this->mysqli_result );
 
             foreach ( $fields as $field )
             {// Processing each entry
                 // (Getting the value)
                 $types[ $field->name ] = self::TYPES[ $field->type ] ?? self::TYPES[ MYSQLI_TYPE_BLOB ];
+            }
+
+
+
+            if ( $this->model )
+            {// Value found
+                // (Getting the value)
+                self::$cached_fields[ $this->model ] = $fields;
             }
 
 
@@ -414,11 +439,10 @@ class Cursor
 
 
         // Returning the value
-        return $transform( new Record($record) );
+        return $transform( new Record( $record ) );
     }
 
-    # Returns [string|false|null] | Throws [Exception]
-    public function fetch_value ()
+    public function fetch_value () : string|false|null
     {
         // (Fetching the record)
         $record = $this->fetch_record();
@@ -449,15 +473,13 @@ class Cursor
 
 
 
-    # Returns [bool]
-    public function reset ()
+    public function reset () : bool
     {
         // Returning the value
         return mysqli_data_seek( $this->mysqli_result, 0 );
     }
 
-    # Returns [void]
-    public function walk (callable $handle_entry)
+    public function walk (callable $handle_entry) : void
     {
         while ( $record = $this->fetch_record() )
         {// Processing each entry
@@ -743,8 +765,7 @@ class Cursor
 
 
 
-    # Returns [string]
-    public function __toString ()
+    public function __toString () : string
     {
         // Returning the value
         return json_encode( $this->list() );

@@ -397,18 +397,35 @@ class Query
 
 
     # Returns [Cursor|false] | Throws [Exception]
-    public function run ()
+    public function run (bool $stream = false)
     {
-        if ( !$this->connection->execute( $this ) )
-        {// (Unable to execute the cmd)
-            // (Setting the value)
-            $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
+        if ( $stream )
+        {// Value is true
+            if ( !$this->connection->execute_stream( $this ) )
+            {// (Unable to execute the cmd)
+                // (Setting the value)
+                $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
 
-            // Throwing an exception
-            throw new \Exception( $message );
+                // Throwing an exception
+                throw new \Exception( $message );
 
-            // Returning the value
-            return false;
+                // Returning the value
+                return false;
+            }
+        }
+        else
+        {// Value is false
+            if ( !$this->connection->execute( $this ) )
+            {// (Unable to execute the cmd)
+                // (Setting the value)
+                $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
+
+                // Throwing an exception
+                throw new \Exception( $message );
+
+                // Returning the value
+                return false;
+            }
         }
 
 

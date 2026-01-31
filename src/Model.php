@@ -15,7 +15,7 @@ class Model
 {
     private int $lid;
 
-    private string $command;
+    private Cursor $cursor;
 
 
 
@@ -32,6 +32,98 @@ class Model
 
     public int        $limit;
     public ?int       $offset;
+
+
+
+    private function build_query (array $fields = [], bool $exclude_fields = false) : Query
+    {
+        // (Getting the value)
+        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
+
+
+
+        // (Getting the value)
+        $query = $this->query()->condition( $condition );
+
+        
+
+        // (Getting the value)
+        $fields = array_unique( $fields );
+
+        if ( $fields )
+        {// Value is not empty
+            if ( $exclude_fields )
+            {// (Fields are excluded)
+                // (Getting the value)
+                $table_fields = array_keys( $this->describe() );
+
+
+
+                // (Getting the value)
+                $include_fields = array_diff( $table_fields, $fields );
+
+                foreach ( $include_fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+            else
+            {// (Fields are included)
+                foreach ( $fields as $field )
+                {// Processing each entry
+                    // (Composing the query)
+                    $query->select_field( null, $field );
+                }
+            }
+        }
+        else
+        {// Value is empty
+            // (Composing the query)
+            $query->select_all();
+        }
+
+
+
+        foreach ( $this->group_columns as $column )
+        {// Processing each entry
+            // (Composing the query)
+            $query->group_by( null, $column );
+        }
+
+        if ( $this->having_raw )
+        {// Value found
+            // (Composing the query)
+            $query->having( $this->having_raw );
+        }
+
+
+
+        foreach ( $this->order_columns as $column => $direction )
+        {// Processing each entry
+            // (Composing the query)
+            $query->order_by( null, $column, $direction );
+        }
+
+
+
+        if ( isset( $this->limit ) )
+        {// Value is set
+            // (Composing the query)
+            $query->limit( $this->limit );
+        }
+
+        if ( isset( $this->offset ) )
+        {// Value is set
+            // (Composing the query)
+            $query->offset( $this->offset );
+        }
+
+
+
+        // Returning the value
+        return $query;
+    }
 
 
 
@@ -355,283 +447,46 @@ class Model
     }
 
     # Returns [Record|false]
-    public function find (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
+    public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
     {
-        // (Getting the value)
-        $query = $this->query()->condition( $this->condition );
-
-
-
-        // (Getting the value)
-        $fields = array_unique( $fields );
-
-        if ( $fields )
-        {// Value is not empty
-            if ( $exclude_fields )
-            {// (Fields are excluded)
-                // (Getting the value)
-                $table_fields = array_keys( $this->describe() );
-
-
-
-                // (Getting the value)
-                $include_fields = array_diff( $table_fields, $fields );
-
-                foreach ( $include_fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-            else
-            {// (Fields are included)
-                foreach ( $fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-        }
-        else
-        {// Value is empty
-            // (Composing the query)
-            $query->select_all();
-        }
-
-
-
-        foreach ( $this->group_columns as $column )
-        {// Processing each entry
-            // (Composing the query)
-            $query->group_by( null, $column );
-        }
-
-        if ( $this->having_raw )
-        {// Value found
-            // (Composing the query)
-            $query->having( $this->having_raw );
-        }
-
-
-
-        foreach ( $this->order_columns as $column => $direction )
-        {// Processing each entry
-            // (Composing the query)
-            $query->order_by( null, $column, $direction );
-        }
-
-
-
-        if ( isset( $this->limit ) )
-        {// Value is set
-            // (Composing the query)
-            $query->limit( $this->limit );
-        }
-
-        if ( isset( $this->offset ) )
-        {// Value is set
-            // (Composing the query)
-            $query->offset( $this->offset );
-        }
-
-
-
         // Returning the value
-        return $query->run()->set_typed_fields( $typed_fields )->fetch_head( $transform_record );
+        return $this->build_query( $fields, $exclude_fields )->run()->fetch_head( $transform_record );
     }
 
     # Returns [array<Record>]
-    public function list (array $fields = [], bool $exclude_fields = false, bool $typed_fields = true, ?callable $transform_record = null)
+    public function list (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
     {
-        // (Getting the value)
-        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
-
-
-
-        // (Getting the value)
-        $query = $this->query()->condition( $condition );
-
-        
-
-        // (Getting the value)
-        $fields = array_unique( $fields );
-
-        if ( $fields )
-        {// Value is not empty
-            if ( $exclude_fields )
-            {// (Fields are excluded)
-                // (Getting the value)
-                $table_fields = array_keys( $this->describe() );
-
-
-
-                // (Getting the value)
-                $include_fields = array_diff( $table_fields, $fields );
-
-                foreach ( $include_fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-            else
-            {// (Fields are included)
-                foreach ( $fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-        }
-        else
-        {// Value is empty
-            // (Composing the query)
-            $query->select_all();
-        }
-
-
-
-        foreach ( $this->group_columns as $column )
-        {// Processing each entry
-            // (Composing the query)
-            $query->group_by( null, $column );
-        }
-
-        if ( $this->having_raw )
-        {// Value found
-            // (Composing the query)
-            $query->having( $this->having_raw );
-        }
-
-
-
-        foreach ( $this->order_columns as $column => $direction )
-        {// Processing each entry
-            // (Composing the query)
-            $query->order_by( null, $column, $direction );
-        }
-
-
-
-        if ( isset( $this->limit ) )
-        {// Value is set
-            // (Composing the query)
-            $query->limit( $this->limit );
-        }
-
-        if ( isset( $this->offset ) )
-        {// Value is set
-            // (Composing the query)
-            $query->offset( $this->offset );
-        }
-
-
-
         // Returning the value
-        return $query->run()->set_typed_fields( $typed_fields )->list( $transform_record );
+        return $this->build_query( $fields, $exclude_fields )->run()->list( $transform_record );
     }
 
 
 
-    public function fields (array $fields = [], bool $exclude_fields = false) : self
+    public function cursor (array $fields = [], bool $exclude_fields = false) : Cursor|false
     {
         // (Getting the value)
-        $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
+        $query = $this->build_query( $fields, $exclude_fields );
 
 
 
         // (Getting the value)
-        $query = $this->query()->condition( $condition );
+        $cursor = $query->run( true );
 
-        
-
-        // (Getting the value)
-        $fields = array_unique( $fields );
-
-        if ( $fields )
-        {// Value is not empty
-            if ( $exclude_fields )
-            {// (Fields are excluded)
-                // (Getting the value)
-                $table_fields = array_keys( $this->describe() );
-
-
-
-                // (Getting the value)
-                $include_fields = array_diff( $table_fields, $fields );
-
-                foreach ( $include_fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-            else
-            {// (Fields are included)
-                foreach ( $fields as $field )
-                {// Processing each entry
-                    // (Composing the query)
-                    $query->select_field( null, $field );
-                }
-            }
-        }
-        else
-        {// Value is empty
-            // (Composing the query)
-            $query->select_all();
+        if ( !$cursor )
+        {// (Unable to run the query)
+            // Returning the value
+            return false;
         }
 
 
 
-        foreach ( $this->group_columns as $column )
-        {// Processing each entry
-            // (Composing the query)
-            $query->group_by( null, $column );
-        }
-
-        if ( $this->having_raw )
-        {// Value found
-            // (Composing the query)
-            $query->having( $this->having_raw );
-        }
-
-
-
-        foreach ( $this->order_columns as $column => $direction )
-        {// Processing each entry
-            // (Composing the query)
-            $query->order_by( null, $column, $direction );
-        }
-
-
-
-        if ( isset( $this->limit ) )
-        {// Value is set
-            // (Composing the query)
-            $query->limit( $this->limit );
-        }
-
-        if ( isset( $this->offset ) )
-        {// Value is set
-            // (Composing the query)
-            $query->offset( $this->offset );
-        }
-
-
-
-        // (Getting the value)
-        $this->command = $query;
+        // (Setting the model)
+        $cursor->set_model( $this );
 
 
 
         // Returning the value
-        return $this;
-    }
-
-    public function read () : Record|string|null|false
-    {
-        // Returning the value
-        return $this->connection->run( $this->command )->fetch_cursor()->set_typed_fields( true )->read();
+        return $cursor;
     }
 
 
