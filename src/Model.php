@@ -227,7 +227,6 @@ class Model
 
 
 
-    # Returns [self]
     public function __construct (Connection &$connection, string $database, string $table)
     {
         // (Getting the values)
@@ -246,12 +245,16 @@ class Model
 
         // (Setting the value)
         $this->links = [];
+
+
+
+        // (Resetting the model)
+        $this->reset();
     }
 
 
 
-    # Returns [self|false]
-    public function insert (array $records, bool $ignore_error = false)
+    public function insert (array $records, bool $ignore_error = false) : self|false
     {
         // (Getting the value)
         $this->lid = (int) $this->connection->get_last_insert_id();
@@ -306,15 +309,13 @@ class Model
         return $this;
     }
 
-    # Returns [Cursor|false]
-    public function select (Query $query)
+    public function select (Query $query) : Cursor|false
     {
         // Returning the value
         return $query->from( $this->database, $this->table, 'T', true )->run();
     }
 
-    # Returns [self|false]
-    public function update (array $values)
+    public function update (array $values) : self|false
     {
         // (Getting the value)
         $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
@@ -361,8 +362,7 @@ class Model
         return $this;
     }
 
-    # Returns [self|false]
-    public function delete ()
+    public function delete () : self|false
     {
         // (Getting the value)
         $condition = $this->condition ?? ( new Condition() )->set_connection( $this->connection );
@@ -383,8 +383,7 @@ class Model
 
 
 
-    # Returns [Cursor|false] | Throws [Exception]
-    public function set (array $values = [], array $key = [], bool $ignore_error = false)
+    public function set (array $values = [], array $key = [], bool $ignore_error = false) : Cursor|false
     {
         // (Getting the value)
         $key_values =
@@ -483,8 +482,7 @@ class Model
 
 
 
-    # Returns [Query]
-    public function query ()
+    public function query () : Query
     {
         // (Creating a Query)
         $query = new Query( $this->connection );
@@ -500,8 +498,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function filter (array $filter = [])
+    public function filter (array $filter = []) : self
     {
         // (Getting the value)
         $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
@@ -517,8 +514,7 @@ class Model
         return $this;
     }
 
-    # Returns [Condition]
-    public function condition_start ()
+    public function condition_start () : Condition
     {
         // Returning the value
         return $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
@@ -526,8 +522,7 @@ class Model
 
 
 
-    # Returns [int]
-    public function count (?string $field = null)
+    public function count (?string $field = null) : int
     {
         // (Getting the value)
         $query = $this->query()->condition( $this->condition );
@@ -551,8 +546,7 @@ class Model
         return (int) $query->run()->set_mode( 'value' )->fetch_head();
     }
 
-    # Returns [Record|false]
-    public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
+    public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null) : Record|false
     {
         // (Getting the value)
         $record = $this->build_query( $fields, $exclude_fields )->run()->fetch_head( $transform_record );
@@ -642,8 +636,7 @@ class Model
         return $ids;
     }
 
-    # Returns [int]
-    public function last_id ()
+    public function last_id () : int
     {
         // Returning the value
         return (int) $this->connection->get_last_insert_id();
@@ -651,8 +644,7 @@ class Model
 
 
 
-    # Returns [self|false]
-    public function empty ()
+    public function empty () : self|false
     {
         if ( !$this->connection->execute( "TRUNCATE TABLE `$this->database`.`$this->table`;" ) )
         {// (Unable to execute the cmd)
@@ -677,8 +669,7 @@ class Model
 
 
 
-    # Returns [self|false]
-    public function copy (string $dst_database, string $dst_table, bool $copy_data = false)
+    public function copy (string $dst_database, string $dst_table, bool $copy_data = false) : self|false
     {
         // (Getting the values)
         $dst_database = str_replace( '`', '', $dst_database );
@@ -709,8 +700,7 @@ class Model
         return $this;
     }
 
-    # Returns [self|false]
-    public function remove ()
+    public function remove () : self|false
     {
         if ( !$this->connection->execute( "DROP TABLE IF EXISTS `$this->database`.`$this->table`;" ) )
         {// (Unable to execute the cmd)
@@ -1045,8 +1035,7 @@ class Model
 
 
 
-    # Returns [string]
-    public function __toString ()
+    public function __toString () : string
     {
         // Returning the value
         return "`$this->database`.`$this->table`";
