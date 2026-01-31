@@ -768,12 +768,39 @@ class Cursor
         return $result;
     }
 
+    public function close () : self
+    {
+        if ( $this->mysqli_result )
+        {// Value found
+            // (Freeing the memory)
+            mysqli_free_result( $this->mysqli_result );
+
+
+
+            // (Setting the value)
+            $this->mysqli_result = null;
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
+
 
 
     public function __toString () : string
     {
         // Returning the value
         return json_encode( $this->list() );
+    }
+
+
+
+    public function __destruct ()
+    {
+        // (Closing the cursor)
+        $this->close();
     }
 }
 

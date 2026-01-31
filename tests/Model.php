@@ -23,4 +23,9 @@ while ( $record = $cursor->read() )
 
 
 
+// (Closing the cursor)
+$cursor->close();
+
+
+
 ?>
