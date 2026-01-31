@@ -16,8 +16,6 @@ class Model
 {
     private int $lid;
 
-    private Cursor $cursor;
-
     private array $links;
 
 
@@ -130,14 +128,25 @@ class Model
 
 
 
-    private function get_relation (string $model) : Relation|null
+    private function get_relation (string|object $model) : Relation|null
     {
-        if ( !class_exists( $model ) ) return null;
+        // (Getting the value)
+        $class = $model;
+
+        if ( is_object( $model ) )
+        {// Match OK
+            // (Getting the value)
+            $class = get_class( $model );
+        }
+
+
+
+        if ( !class_exists( $class ) ) return null;
 
 
 
         // Returning the value
-        return new Relation( $model );
+        return new Relation( $class );
     }
 
     private function load_links (array $records)
