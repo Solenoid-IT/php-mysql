@@ -62,6 +62,17 @@ class Record extends \stdClass
         return $current;
     }
 
+    public function set_relation (string $name, object $value) : self
+    {
+        // (Getting the value)
+        $this->{ $name } = $value;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
 
 
     public function hash (string $alg = 'sha512') : string

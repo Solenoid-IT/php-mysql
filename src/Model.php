@@ -8,6 +8,7 @@ namespace Solenoid\MySQL;
 
 use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Condition;
+use \Solenoid\MySQL\Relation;
 
 
 
@@ -16,6 +17,8 @@ class Model
     private int $lid;
 
     private Cursor $cursor;
+
+    private array $links;
 
 
 
@@ -127,6 +130,94 @@ class Model
 
 
 
+    private function get_relation (string $model) : Relation|null
+    {
+        if ( !class_exists( $model ) ) return null;
+
+
+
+        // Returning the value
+        return new Relation( $model );
+    }
+
+    private function load_links (array $records)
+    {
+        foreach ( $this->links as $link )
+        {// Processing each entry
+            // (Getting the value)
+            $relation = $this->get_relation( $link ); 
+
+
+
+            // (Setting the value)
+            $primary_keys = [];
+
+            foreach ( $records as $record )
+            {// Processing each entry
+                // (Getting the value)
+                $pk_value = $record->{ $relation->local_key };
+
+                if ( $pk_value )
+                {// Value found
+                    // (Appending the value)
+                    $primary_keys[] = $pk_value;
+                }
+            }
+
+
+
+            // (Getting the value)
+            $primary_keys = array_unique( $primary_keys );
+
+            if ( !$primary_keys ) continue;
+
+
+
+            // (Getting the value)
+            $related_model = new $relation->model( $this->connection );
+
+
+
+            // (Getting the value)
+            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list();
+
+
+
+            // (Setting the value)
+            $remote_records = [];
+
+            foreach ( $related_results as $related_record )
+            {// Processing each entry
+                // (Getting the value)
+                $fk_value = $related_record->{ $relation->foreign_key };
+
+                // (Appending the value)
+                $remote_records[ $fk_value ][] = $related_record;
+            }
+
+
+
+            foreach ( $records as $record )
+            {// Processing each entry
+                // (Getting the value)
+                $pk_value = $record->{ $relation->local_key };
+
+                // (Getting the value)
+                $related_data = $remote_records[ $pk_value ] ?? [];
+
+                // (Setting the relation)
+                $record->set_relation( $relation, $related_data );
+            }
+        }
+
+
+
+        // Returning the value
+        return $records;
+    }
+
+
+
     # Returns [self]
     public function __construct (Connection &$connection, string $database, string $table)
     {
@@ -141,6 +232,11 @@ class Model
         $this->order_columns = [];
 
         $this->having_raw    = '';
+
+
+
+        // (Setting the value)
+        $this->links = [];
     }
 
 
@@ -449,15 +545,37 @@ class Model
     # Returns [Record|false]
     public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
     {
+        // (Getting the value)
+        $record = $this->build_query( $fields, $exclude_fields )->run()->fetch_head( $transform_record );
+
+        if ( !$record || !$this->links )
+        {// Match failed
+            // Returning the value
+            return $record;
+        }
+
+
+
         // Returning the value
-        return $this->build_query( $fields, $exclude_fields )->run()->fetch_head( $transform_record );
+        return $this->load_links( [ $record ] )[0];
     }
 
     # Returns [array<Record>]
     public function list (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
     {
+        // (Getting the value)
+        $records = $this->build_query( $fields, $exclude_fields )->run()->list( $transform_record );
+
+        if ( !$records || !$this->links )
+        {// Match failed
+            // Returning the value
+            return $records;
+        }
+
+
+
         // Returning the value
-        return $this->build_query( $fields, $exclude_fields )->run()->list( $transform_record );
+        return $this->load_links( $records );
     }
 
 
@@ -599,8 +717,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function reset ()
+    public function reset () : self
     {
         // (Getting the value)
         $this->condition = ( new Condition() )->set_connection( $this->connection )->set_model( $this );
@@ -611,8 +728,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function where ()
+    public function where () : self
     {
         // (Getting the values)
         $args     = func_get_args();
@@ -711,8 +827,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function where_tuple (array $fields, string $operator, array $values)
+    public function where_tuple (array $fields, string $operator, array $values) : self
     {
         // (Composing the condition)
         $this->condition->where_tuple( $fields, $operator, $values );
@@ -723,8 +838,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function and ()
+    public function and () : self
     {
         // (Composing the condition)
         $this->condition->and();
@@ -735,8 +849,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function or ()
+    public function or () : self
     {
         // (Composing the condition)
         $this->condition->or();
@@ -747,8 +860,7 @@ class Model
         return $this;
     }
 
-    # Returns [bool]
-    public function exists ()
+    public function exists () : bool
     {
         // Returning the value
         return $this->count() > 0;
@@ -756,8 +868,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function bind (&$object, array $fields = [])
+    public function bind (&$object, array $fields = []) : self
     {
         // (Getting the value)
         $object = $this->find( $fields );
@@ -770,8 +881,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function group (array $columns)
+    public function group (array $columns) : self
     {
         // (Setting the value)
         $this->group_columns = [];
@@ -788,8 +898,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function having (string $expression)
+    public function having (string $expression) : self
     {
         // (Getting the value)
         $this->having_raw = $expression;
@@ -802,8 +911,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function order (array $columns)
+    public function order (array $columns) : self
     {
         // (Setting the value)
         $this->order_columns = [];
@@ -841,8 +949,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function fill (array $values)
+    public function fill (array $values) : self
     {
         // (Filling the values)
         $this->condition->fill( $values );
@@ -855,8 +962,7 @@ class Model
 
 
 
-    # Returns [self]
-    public function search (string $value, string $format = '%V%', array $fields = [])
+    public function search (string $value, string $format = '%V%', array $fields = []) : self
     {
         // (Getting the value)
         $fields = $fields ? $fields : array_keys( $this->describe() );
@@ -872,8 +978,7 @@ class Model
         return $this;
     }
 
-    # Returns [self]
-    public function search_values (array $values, string $format = '%V%')
+    public function search_values (array $values, string $format = '%V%') : self
     {
         // (Getting the value)
         $this->condition->search_values( $values, $format );
@@ -886,13 +991,24 @@ class Model
 
 
 
-    # Returns [self]
-    public function paginate (int $limit, ?int $offset = null)
+    public function paginate (int $limit, ?int $offset = null) : self
     {
         // (Getting the values)
         $this->limit  = $limit;
         $this->offset = $offset;
 
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    public function link (array $models) : self
+    {
+        // (Getting the value)
+        $this->links = $models;
 
 
         // Returning the value
