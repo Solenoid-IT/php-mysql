@@ -370,7 +370,12 @@ class Cursor
 
 
             // (Getting the value)
-            $fields = self::$cached_fields[ $this->model ] ?? mysqli_fetch_fields( $this->mysqli_result );
+            $model_class = $this->model ? get_class( $this->model ) : null;
+
+
+
+            // (Getting the value)
+            $fields = self::$cached_fields[ $model_class ] ?? mysqli_fetch_fields( $this->mysqli_result );
 
             foreach ( $fields as $field )
             {// Processing each entry
@@ -383,7 +388,7 @@ class Cursor
             if ( $this->model )
             {// Value found
                 // (Getting the value)
-                self::$cached_fields[ $this->model ] = $fields;
+                self::$cached_fields[ $model_class ] = $fields;
             }
 
 
