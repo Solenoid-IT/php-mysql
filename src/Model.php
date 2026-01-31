@@ -151,10 +151,10 @@ class Model
 
     private function load_links (array $records)
     {
-        foreach ( $this->links as $link )
+        foreach ( $this->links as $model )
         {// Processing each entry
             // (Getting the value)
-            $relation = $this->get_relation( $link ); 
+            $relation = $this->get_relation( $model ); 
 
 
 
@@ -183,7 +183,12 @@ class Model
 
 
             // (Getting the value)
-            $related_model = new $relation->model( $this->connection );
+            $default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
+
+
+
+            // (Getting the value)
+            $related_model = new $relation->model( $this->connection, $default_props['database'], $default_props['table'] );
 
 
 
