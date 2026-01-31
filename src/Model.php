@@ -188,7 +188,7 @@ class Model
 
 
             // (Getting the value)
-            $related_model = new $relation->model();
+            $related_model = ( new $relation->model() )::fetch();
 
 
 
