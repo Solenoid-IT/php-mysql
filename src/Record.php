@@ -8,15 +8,26 @@ namespace Solenoid\MySQL;
 
 class Record extends \stdClass
 {
+    public \stdClass $values;
+    public \stdClass $relations;
+
+
+
     public function __construct (array &$value)
     {
+        // (Getting the values)
+        $this->values    = new \stdClass();
+        $this->relations = new \stdClass();
+
+
+
         // (Getting the value)
-        $object = json_decode( json_encode($value) );
+        $object = json_decode( json_encode( $value ) );
 
         foreach ( $object as $k => $v )
         {// Processing each entry
             // (Getting the value)
-            $this->{ $k } = $v;
+            $this->values->{ $k } = $v;
         }
     }
 
@@ -27,7 +38,7 @@ class Record extends \stdClass
         if ( !str_contains( $column, '.' ) )
         {// Match failed
             // Returning the value
-            return $this->{ $column } ?? $default;
+            return $this->values->{ $column } ?? $default;
         }
 
 
@@ -38,7 +49,7 @@ class Record extends \stdClass
 
 
         // (Getting the value)
-        $current = $this;
+        $current = $this->values;
 
 
 
@@ -62,10 +73,10 @@ class Record extends \stdClass
         return $current;
     }
 
-    public function set_relation (string $name, object $value) : self
+    public function set_relation (string $name, array $value) : self
     {
         // (Getting the value)
-        $this->{ $name } = $value;
+        $this->relations->{ $name } = $value;
 
 
 
@@ -75,10 +86,10 @@ class Record extends \stdClass
 
 
 
-    public function hash (string $alg = 'sha512') : string
+    public function hash (string $algo = 'sha512') : string
     {
         // Returning the value
-        return hash( $alg, implode( '', array_values( $this->to_array() ) ) );
+        return hash( $algo, json_encode( $this->values ) );
     }
 
 
@@ -86,7 +97,24 @@ class Record extends \stdClass
     public function to_array () : array
     {
         // Returning the value
-        return json_decode( json_encode($this), true );
+        return json_decode( json_encode( $this ), true );
+    }
+
+
+
+    public function __get (string $key)
+    {
+        // Returning the value
+        return $this->get( $key );
+    }
+
+    public function __unset (string $key)
+    {
+        if ( isset( $this->values->{$key} ) )
+        {// Value found
+            // (Unsetting the value)
+            unset( $this->values->{$key} );
+        }
     }
 }
 

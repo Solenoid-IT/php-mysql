@@ -151,10 +151,26 @@ class Model
 
     private function load_links (array $records)
     {
-        foreach ( $this->links as $model )
+        foreach ( $this->links as $link )
         {// Processing each entry
+            if ( is_array( $link ) )
+            {// Match OK
+                // (Getting the values)
+                [ $related_model, $fields ] = $link;
+            }
+            else
+            {// Match failed
+                // (Getting the value)
+                $related_model = $link;
+
+                // (Setting the value)
+                $fields = [];
+            }
+
+
+
             // (Getting the value)
-            $relation = $this->get_relation( $model ); 
+            $relation = $this->get_relation( $related_model ); 
 
 
 
@@ -182,18 +198,22 @@ class Model
 
 
 
-            // (Getting the value)
-            #$default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
+            if ( is_string( $related_model ) )
+            {// Match OK
+                if ( is_subclass_of( $related_model, __CLASS__ ) )
+                {// Match OK
+                    // (Getting the value)
+                    $default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
+
+                    // (Getting the value)
+                    $related_model = new self( $this->connection, $default_props['database'], $default_props['table'] );
+                }
+            }
 
 
 
             // (Getting the value)
-            $related_model = ( new $relation->model() )::fetch();
-
-
-
-            // (Getting the value)
-            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list();
+            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list( $fields );
 
 
 
@@ -220,7 +240,7 @@ class Model
                 $related_data = $remote_records[ $pk_value ] ?? [];
 
                 // (Setting the relation)
-                $record->set_relation( $relation, $related_data );
+                $record->set_relation( $related_model->table, $related_data );
             }
         }
 

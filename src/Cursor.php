@@ -584,7 +584,7 @@ class Cursor
         // (Setting the value)
         $head = null;
 
-        while ( $record = $this->fetch_record($transform) )
+        while ( $record = $this->fetch_record( $transform ) )
         {// Processing each entry
             switch ( $this->mode )
             {
@@ -595,7 +595,7 @@ class Cursor
 
                 case 'value':
                     // (Getting the value)
-                    $head = ( array_values( $record->to_array() ) )[0];
+                    $head = ( array_values( (array) $record->values ) )[0];
                 break;
             }
 
@@ -637,27 +637,30 @@ class Cursor
         // (Setting the value)
         $tail = null;
 
-        while ( $record = $this->fetch_record($transform) )
+        while ( $record = $this->fetch_record( $transform ) )
         {// Processing each entry
-            switch ( $this->mode )
-            {
-                case 'record':
-                    // (Getting the value)
-                    $tail = $record;
-                break;
-                
-                case 'value':
-                    // (Getting the value)
-                    $tail = ( array_values( $record->to_array() ) )[0];
-                break;
-            }
-            
+            // (Getting the value)
+            $tail = $record;
         }
 
         if ( $tail === null )
         {// (There are no more records to fetch)
             // Returning the value
             return false;
+        }
+
+
+
+        switch ( $this->mode )
+        {
+            case 'record':
+                // (Doing nothing)
+            break;
+
+            case 'value':
+                // (Getting the value)
+                $tail = ( array_values( (array) $tail->values ) )[0];
+            break;
         }
 
 
