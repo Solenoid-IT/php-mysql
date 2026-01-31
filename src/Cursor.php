@@ -794,14 +794,6 @@ class Cursor
         // Returning the value
         return json_encode( $this->list() );
     }
-
-
-
-    public function __destruct ()
-    {
-        // (Closing the cursor)
-        $this->close();
-    }
 }
 
 
