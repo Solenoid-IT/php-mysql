@@ -683,6 +683,14 @@ class Condition
 
     public function last_lop () : string|null
     {
+        if ( $this->value === '' )
+        {// Value is empty
+            // Returning the value
+            return null;
+        }
+
+
+
         // (Getting the value)
         $lop = trim( substr( $this->value, -4 ) );
 
