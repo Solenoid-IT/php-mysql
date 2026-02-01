@@ -1001,8 +1001,16 @@ class Model
 
 
 
+        if ( $this->condition->last_lop() !== 'AND' )
+        {// Value not found
+            // (Composing the condition)
+            $this->condition->and();
+        }
+
+
+
         // (Composing the condition)
-        $this->condition->and()->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
+        $this->condition->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
 
 
 

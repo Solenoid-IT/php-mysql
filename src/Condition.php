@@ -681,6 +681,19 @@ class Condition
 
 
 
+    public function last_lop () : string|null
+    {
+        // (Getting the value)
+        $lop = trim( substr( $this->value, -4 ) );
+
+
+
+        // Returning the value
+        return in_array( $lop, [ 'AND', 'OR', 'NOT' ] ) ? $lop : null;
+    }
+
+
+
     public function __toString () : string
     {
         // Returning the value
