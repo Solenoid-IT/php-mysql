@@ -27,7 +27,6 @@ class Query
 
 
 
-    # Returns [self]
     public function __construct (Connection &$connection, ?string $name = null)
     {
         // (Getting the values)
@@ -49,8 +48,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function from_raw (string $content)
+    public function from_raw (string $content) : self
     {
         // (Appending the value)
         $this->source .= $content;
@@ -63,8 +61,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function from (?string $database = null, string $table, ?string $alias = null, bool $replace = false)
+    public function from (?string $database = null, string $table, ?string $alias = null, bool $replace = false) : self
     {
         // (Getting the value)
         $content = ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' );
@@ -88,8 +85,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function natural_join (?string $database = null, string $table, ?string $alias = null)
+    public function natural_join (?string $database = null, string $table, ?string $alias = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' NATURAL JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -100,8 +96,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function cross_join (?string $database = null, string $table, ?string $alias = null)
+    public function cross_join (?string $database = null, string $table, ?string $alias = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' CROSS JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -114,8 +109,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function inner_join (?string $database = null, string $table, ?string $alias = null)
+    public function inner_join (?string $database = null, string $table, ?string $alias = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' INNER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -128,8 +122,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function left_outer_join (?string $database = null, string $table, ?string $alias = null)
+    public function left_outer_join (?string $database = null, string $table, ?string $alias = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' LEFT OUTER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -140,8 +133,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function right_outer_join (?string $database = null, string $table, ?string $alias = null)
+    public function right_outer_join (?string $database = null, string $table, ?string $alias = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' RIGHT OUTER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -154,8 +146,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function on (?string $a_table_alias = null, string $a, string $op, ?string $b_table_alias = null, string $b)
+    public function on (?string $a_table_alias = null, string $a, string $op, ?string $b_table_alias = null, string $b) : self
     {
         // (Getting the value)
         $a_table_alias = $a_table_alias ? ( $this->connection->sanitize_text( str_replace( '`', '', $a_table_alias ) ) . '.' ) : '';
@@ -176,8 +167,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function on_and ()
+    public function on_and () : self
     {
         // (Appending the value)
         $this->from_raw( ' AND ' );
@@ -188,8 +178,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function on_or ()
+    public function on_or () : self
     {
         // (Appending the value)
         $this->from_raw( ' OR ' );
@@ -202,8 +191,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function condition (?Condition $condition = null)
+    public function condition (?Condition $condition = null) : self
     {
         // (Getting the value)
         $this->condition = $condition ?? ( new Condition() )->set_connection( $this->connection )->set_query( $this );
@@ -214,8 +202,7 @@ class Query
         return $this;
     }
 
-    # Returns [Condition]
-    public function condition_start ()
+    public function condition_start () : Condition
     {
         // (Getting the value)
         $this->condition = ( new Condition() )->set_connection( $this->connection )->set_query( $this );
@@ -228,8 +215,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function group_by (?string $table_alias = null, string $column)
+    public function group_by (?string $table_alias = null, string $column) : self
     {
         // (Appending the value)
         $this->group[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
@@ -240,8 +226,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function having (string $expression)
+    public function having (string $expression) : self
     {
         // (Getting the value)
         $this->having_raw = $expression;
@@ -254,8 +239,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function order_by (?string $table_alias = null, string $column, string $direction)
+    public function order_by (?string $table_alias = null, string $column, string $direction) : self
     {
         // (Appending the value)
         $this->order[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
@@ -268,8 +252,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function limit (int $value)
+    public function limit (int $value) : self
     {
         // (Appending the value)
         $this->limit .= 'LIMIT ' . $value;
@@ -280,8 +263,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function limit_range (int $min, int $max)
+    public function limit_range (int $min, int $max) : self
     {
         // (Appending the value)
         $this->limit .= 'LIMIT ' . $min . ', ' . $max;
@@ -292,8 +274,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function offset (int $value)
+    public function offset (int $value) : self
     {
         // (Appending the value)
         $this->limit .= ' OFFSET ' . $value;
@@ -306,8 +287,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function distinct ()
+    public function distinct () : self
     {
         // (Setting the value)
         $this->distinct = true;
@@ -320,8 +300,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function select_raw (string $content)
+    public function select_raw (string $content) : self
     {
         // (Appending the value)
         $this->projection[] = $content;
@@ -332,8 +311,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function select_field (?string $table_alias = null, string $column, ?string $name = null)
+    public function select_field (?string $table_alias = null, string $column, ?string $name = null) : self
     {
         // (Appending the value)
         $this->select_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -344,8 +322,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function select_all (?string $table_alias = null)
+    public function select_all (?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->select_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '*' );
@@ -356,8 +333,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function select_agg (string $type, ?string $table_alias = null, string $column, ?string $name = null)
+    public function select_agg (string $type, ?string $table_alias = null, string $column, ?string $name = null) : self
     {
         // (Appending the value)
         $this->select_raw( $type . '( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -370,8 +346,7 @@ class Query
 
 
 
-    # Returns [self]
-    public function count_all (?string $table_alias = null, ?string $name = null)
+    public function count_all (?string $table_alias = null, ?string $name = null) : self
     {
         // (Appending the value)
         $this->select_raw( 'COUNT( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '*' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -382,8 +357,7 @@ class Query
         return $this;
     }
 
-    # Returns [self]
-    public function count_field (?string $table_alias = null, string $name)
+    public function count_field (?string $table_alias = null, string $name) : self
     {
         // (Appending the value)
         $this->select_raw( 'COUNT( DISTINCT ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' . ' )' );
@@ -396,8 +370,7 @@ class Query
 
 
 
-    # Returns [Cursor|false] | Throws [Exception]
-    public function run (bool $stream = false)
+    public function run (bool $stream = false) : Cursor|false
     {
         if ( $stream )
         {// Value is true
@@ -436,8 +409,7 @@ class Query
 
 
 
-    # Returns [string]
-    public function __toString ()
+    public function build () : string
     {
         // (Getting the values)
         $projection = implode( ",\n\t", $this->projection );
@@ -493,6 +465,14 @@ class Query
 
         // Returning the value
         return $command;
+    }
+
+
+
+    public function __toString () : string
+    {
+        // Returning the value
+        return $this->build();
     }
 }
 

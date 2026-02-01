@@ -149,6 +149,26 @@ class Model
         return new Relation( $class );
     }
 
+    private function get_related_model (string|object $model) : self
+    {
+        if ( is_string( $model ) )
+        {// Match OK
+            if ( is_subclass_of( $model, __CLASS__ ) )
+            {// Match OK
+                // (Getting the value)
+                $default_props = ( new \ReflectionClass( $model ) )->getDefaultProperties();
+
+                // (Getting the value)
+                $model = new self( $this->connection, $default_props['database'], $default_props['table'] );
+            }
+        }
+
+
+
+        // Returning the value
+        return $model;
+    }
+
     private function load_links (array $records)
     {
         foreach ( $this->links as $link )
@@ -198,17 +218,8 @@ class Model
 
 
 
-            if ( is_string( $related_model ) )
-            {// Match OK
-                if ( is_subclass_of( $related_model, __CLASS__ ) )
-                {// Match OK
-                    // (Getting the value)
-                    $default_props = ( new \ReflectionClass( $relation->model ) )->getDefaultProperties();
-
-                    // (Getting the value)
-                    $related_model = new self( $this->connection, $default_props['database'], $default_props['table'] );
-                }
-            }
+            // (Getting the value)
+            $related_model = $this->get_related_model( $relation->model );
 
 
 
@@ -1033,6 +1044,43 @@ class Model
     {
         // (Getting the value)
         $this->links = $models;
+
+
+        // Returning the value
+        return $this;
+    }
+
+    public function rel (string|object $model, callable $filter) : self|false
+    {
+        // (Getting the value)
+        $relation = $this->get_relation( $model );
+
+        if ( !$relation )
+        {// Value not found
+            // Returning the value
+            return false;
+        }
+
+
+
+        // (Getting the value)
+        $related_model = $this->get_related_model( $relation->model );
+
+
+
+        // (Getting the value)
+        $sub_query = $related_model->query()->condition_start()->where_raw( $relation->foreign_key .  ' = T.' . $relation->local_key )->condition_end()->select_raw( '1' ); 
+
+
+
+        // (Calling the function)
+        $filter( $related_model );
+
+
+
+        // (Composing the condition)
+        $this->condition->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
+
 
 
         // Returning the value
