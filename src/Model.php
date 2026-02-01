@@ -774,7 +774,7 @@ class Model
     public function where () : self
     {
         // (Composing the condition)
-        $this->condition->where( func_get_args() );
+        $this->condition->where( ... func_get_args() );
 
 
 
