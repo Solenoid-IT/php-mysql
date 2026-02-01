@@ -987,7 +987,7 @@ class Model
 
 
         // (Getting the value)
-        $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" ); 
+        $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" )->and(); 
 
 
 
