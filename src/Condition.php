@@ -692,7 +692,7 @@ class Condition
 
 
         // (Getting the value)
-        $lop = trim( substr( $this->value, -6 ) );
+        $lop = trim( substr( $this->value, -5 ) );
 
 
 
