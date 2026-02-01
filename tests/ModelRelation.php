@@ -17,6 +17,7 @@ $post_model = new Model( new Connection(), 'database', 'post' );
 // (Getting the value)
 $records = $user_model
     ->where( 'id', '<=', 100 )
+    ->and()
     ->rel( $post_model, fn (Condition $condition) => $condition->where( 'score', '<', 64 ) )
     ->link( [ [ $post_model, [ 'id', 'name' ] ] ] )
     ->list( [ 'id', 'name' ] )
