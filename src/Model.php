@@ -16,6 +16,7 @@ class Model
 {
     private int $lid;
 
+    private array $rels;
     private array $links;
 
 
@@ -276,6 +277,11 @@ class Model
         $this->order_columns = [];
 
         $this->having_raw    = '';
+
+
+
+        // (Setting the value)
+        $this->rels = [];
 
 
 
@@ -1042,16 +1048,6 @@ class Model
 
 
 
-    public function link (array $models) : self
-    {
-        // (Getting the value)
-        $this->links = $models;
-
-
-        // Returning the value
-        return $this;
-    }
-
     public function rel (string|object $model, callable $filter) : self|false
     {
         // (Getting the value)
@@ -1070,8 +1066,16 @@ class Model
 
 
 
+        // (Appending the value)
+        $this->rels[] = $relation->model;
+
         // (Getting the value)
-        $sub_query = $related_model->query( 'T' )->condition_start()->where_raw( "`$relation->foreign_key` = T.`$relation->local_key`" )->condition_end()->select_raw( '1' ); 
+        $table_alias = 'R' . count( $this->rels );
+
+
+
+        // (Getting the value)
+        $sub_query = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" )->condition_end()->select_raw( '1' ); 
 
 
 
@@ -1088,6 +1092,16 @@ class Model
         // (Composing the condition)
         $this->condition->and()->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
 
+
+
+        // Returning the value
+        return $this;
+    }
+
+    public function link (array $models) : self
+    {
+        // (Getting the value)
+        $this->links = $models;
 
 
         // Returning the value
