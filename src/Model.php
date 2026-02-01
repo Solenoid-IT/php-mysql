@@ -987,11 +987,6 @@ class Model
 
 
         // (Getting the value)
-        $add_and = $this->condition->last_lop() !== 'AND';
-
-
-
-        // (Getting the value)
         $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" )->and(); 
 
 
@@ -1003,14 +998,6 @@ class Model
 
         // (Getting the value)
         $sub_query = $condition->condition_end()->select_raw( '1' )->build( '' );
-
-
-
-        if ( $add_and )
-        {// Value not found
-            // (Composing the condition)
-            $this->condition->and();
-        }
 
 
 
