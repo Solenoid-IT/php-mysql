@@ -518,13 +518,15 @@ class Model
 
 
 
-    public function query () : Query
+    public function query (?string $table_alias = null) : Query
     {
-        // (Creating a Query)
+        // (Getting the value)
         $query = new Query( $this->connection );
 
+
+
         // (Composing the query)
-        $query->from( $this->database, $this->table, 'T', true );
+        $query->from( $this->database, $this->table, $table_alias, true );
 
 
 
@@ -1069,7 +1071,7 @@ class Model
 
 
         // (Getting the value)
-        $sub_query = $related_model->query()->condition_start()->where_raw( $relation->foreign_key .  ' = T.' . $relation->local_key )->condition_end()->select_raw( '1' ); 
+        $sub_query = $related_model->query( 'T' )->condition_start()->where_raw( "`$relation->foreign_key` = T.`$relation->local_key`" )->condition_end()->select_raw( '1' ); 
 
 
 
@@ -1078,8 +1080,13 @@ class Model
 
 
 
+        // (Getting the value)
+        $sub_query = $sub_query->build( '' );
+
+
+
         // (Composing the condition)
-        $this->condition->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
+        $this->condition->and()->where_raw( "EXISTS\n(\n\t$sub_query\n)" );
 
 
 

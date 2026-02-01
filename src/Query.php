@@ -409,7 +409,7 @@ class Query
 
 
 
-    public function build () : string
+    public function build (string $delimiter = ';') : string
     {
         // (Getting the values)
         $projection = implode( ",\n\t", $this->projection );
@@ -459,7 +459,7 @@ class Query
 
 
         // (Appending the value)
-        $command .= ';';
+        $command .= $delimiter;
 
 
 
