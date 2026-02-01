@@ -773,96 +773,8 @@ class Model
 
     public function where () : self
     {
-        // (Getting the values)
-        $args     = func_get_args();
-        $num_args = count($args);
-
-
-
         // (Composing the condition)
-        $this->condition->where_raw('(');
-
-
-
-        switch ( $num_args )
-        {
-            case 3:// (Format = COV)
-                // (Getting the values)
-                [ $column, $operator, $value ] = $args;
-
-                // (Composing the condition)
-                $this->condition->where_field( null, $column )->op( $operator )->value( $value );
-            break;
-
-            case 2:// (Format = CV)
-                // (Getting the value)
-                [ $column, $value ] = $args;
-
-                // (Composing the condition)
-                $this->condition->where_field( null, $column )->op( '=' )->value( $value );
-            break;
-
-            case 1:// (Format = COV[] or CV[] or RAW)
-                if ( is_array( $args[0] ) )
-                {// (Value is an array)
-                    // (Getting the value)
-                    $num_args = count( $args[0] );
-
-                    for ( $i = 0; $i < $num_args; $i++)
-                    {// Iterating each index
-                        // (Getting the value)
-                        $expr = $args[0][$i];
-
-
-
-                        // (Getting the value)
-                        $length = count( $expr );
-
-                        switch ( $length )
-                        {
-                            case 3:// (Format = COV)
-                                // (Getting the values)
-                                [ $column, $operator, $value ] = $expr;
-
-                                // (Composing the condition)
-                                $this->condition->where_field( null, $column )->op( $operator )->value( $value );
-                            break;
-
-                            case 2:// (Format = CV)
-                                // (Getting the values)
-                                [ $column, $value ] = $expr;
-
-                                // (Composing the condition)
-                                $this->condition->where_field( null, $column )->op( '=' )->value( $value );
-                            break;
-
-                            case 1:// (Format = RAW)
-                                // (Composing the condition)
-                                $this->condition->where_raw( $expr[0] );
-                            break;
-                        }
-
-
-
-                        if ( $i < $num_args - 1 )
-                        {// (Index is not the last)
-                            // (Composing the condition)
-                            $this->condition->and();
-                        }
-                    }
-                }
-                else
-                {// (Value is not an array)
-                    // (Composing the condition)
-                    $this->condition->where_raw( $args[0] );
-                }
-            break;
-        }
-
-
-
-        // (Composing the condition)
-        $this->condition->where_raw(')');
+        $this->condition->where( func_get_args() );
 
 
 
@@ -1075,17 +987,17 @@ class Model
 
 
         // (Getting the value)
-        $sub_query = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" )->condition_end()->select_raw( '1' ); 
+        $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" ); 
 
 
 
         // (Calling the function)
-        $filter( $related_model );
+        $filter( $condition );
 
 
 
         // (Getting the value)
-        $sub_query = $sub_query->build( '' );
+        $sub_query = $condition->condition_end()->select_raw( '1' )->build( '' );
 
 
 

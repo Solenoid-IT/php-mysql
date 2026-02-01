@@ -26,7 +26,6 @@ class Condition
 
 
 
-    # Returns [self]
     public function __construct ()
     {
         // (Setting the value)
@@ -35,8 +34,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function set_connection (Connection &$connection)
+    public function set_connection (Connection &$connection) : self
     {
         // (Getting the value)
         $this->connection = &$connection;
@@ -47,8 +45,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function set_query (Query &$query)
+    public function set_query (Query &$query) : self
     {
         // (Getting the value)
         $this->query = &$query;
@@ -59,8 +56,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function set_model (Model &$model)
+    public function set_model (Model &$model) : self
     {
         // (Getting the value)
         $this->model = &$model;
@@ -73,8 +69,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function where_raw (string $content)
+    public function where_raw (string $content) : self
     {
         // (Appending the value)
         $this->value .= $content;
@@ -87,8 +82,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function where (string $value, bool $raw = false)
+    public function where_expr (string $value, bool $raw = false) : self
     {
         if ( !$raw )
         {// (Subject is not raw)
@@ -107,8 +101,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function where_field (?string $table_alias = null, string $column)
+    public function where_field (?string $table_alias = null, string $column) : self
     {
         // (Appending the value)
         $this->where_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
@@ -119,8 +112,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function where_tuple (array $fields, string $operator, array $values)
+    public function where_tuple (array $fields, string $operator, array $values) : self
     {
         // (Setting the value)
         $num_fields = count( $fields );
@@ -196,8 +188,106 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function op (string $operator)
+    public function where () : self
+    {
+        // (Getting the values)
+        $args     = func_get_args();
+        $num_args = count( $args );
+
+
+
+        // (Composing the condition)
+        $this->where_raw( '(' );
+
+
+
+        switch ( $num_args )
+        {
+            case 3:// (Format = COV)
+                // (Getting the values)
+                [ $column, $operator, $value ] = $args;
+
+                // (Composing the condition)
+                $this->where_field( null, $column )->op( $operator )->value( $value );
+            break;
+
+            case 2:// (Format = CV)
+                // (Getting the value)
+                [ $column, $value ] = $args;
+
+                // (Composing the condition)
+                $this->where_field( null, $column )->op( '=' )->value( $value );
+            break;
+
+            case 1:// (Format = COV[] or CV[] or RAW)
+                if ( is_array( $args[0] ) )
+                {// (Value is an array)
+                    // (Getting the value)
+                    $num_args = count( $args[0] );
+
+                    for ( $i = 0; $i < $num_args; $i++)
+                    {// Iterating each index
+                        // (Getting the value)
+                        $expr = $args[0][$i];
+
+
+
+                        // (Getting the value)
+                        $length = count( $expr );
+
+                        switch ( $length )
+                        {
+                            case 3:// (Format = COV)
+                                // (Getting the values)
+                                [ $column, $operator, $value ] = $expr;
+
+                                // (Composing the condition)
+                                $this->where_field( null, $column )->op( $operator )->value( $value );
+                            break;
+
+                            case 2:// (Format = CV)
+                                // (Getting the values)
+                                [ $column, $value ] = $expr;
+
+                                // (Composing the condition)
+                                $this->where_field( null, $column )->op( '=' )->value( $value );
+                            break;
+
+                            case 1:// (Format = RAW)
+                                // (Composing the condition)
+                                $this->where_raw( $expr[0] );
+                            break;
+                        }
+
+
+
+                        if ( $i < $num_args - 1 )
+                        {// (Index is not the last)
+                            // (Composing the condition)
+                            $this->and();
+                        }
+                    }
+                }
+                else
+                {// (Value is not an array)
+                    // (Composing the condition)
+                    $this->where_raw( $args[0] );
+                }
+            break;
+        }
+
+
+
+        // (Composing the condition)
+        $this->where_raw( ')' );
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    public function op (string $operator) : self
     {
         // (Getting the value)
         $this->current_op = $operator;
@@ -208,8 +298,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function value (mixed $value, bool $raw = false)
+    public function value (mixed $value, bool $raw = false) : self
     {
         if ( !$raw )
         {// (Value is not raw)
@@ -257,8 +346,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function filter (array $value)
+    public function filter (array $value) : self
     {
         // (Getting the value)
         $num_x = count( $value );
@@ -327,8 +415,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function in (array $values, bool $raw = false)
+    public function in (array $values, bool $raw = false) : self
     {
         if ( !$raw )
         {// (Values are not raw)
@@ -352,8 +439,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function is (mixed $value)
+    public function is (mixed $value) : self
     {
         // (Composing the query)
         $this->op('IS')->value($value);
@@ -364,8 +450,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function is_not (mixed $value)
+    public function is_not (mixed $value) : self
     {
         // (Composing the query)
         $this->op('IS NOT')->value($value);
@@ -378,8 +463,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function equal (mixed $value)
+    public function equal (mixed $value) : self
     {
         // (Composing the query)
         $this->op('=')->value($value);
@@ -390,8 +474,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function not_equal (mixed $value)
+    public function not_equal (mixed $value) : self
     {
         // (Composing the query)
         $this->op('<>')->value($value);
@@ -404,8 +487,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function lt (mixed $value)
+    public function lt (mixed $value) : self
     {
         // (Composing the query)
         $this->op('<')->value($value);
@@ -416,8 +498,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function gt (mixed $value)
+    public function gt (mixed $value) : self
     {
         // (Composing the query)
         $this->op('>')->value($value);
@@ -430,8 +511,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function like (string $start_wildcard = '%', string $value, string $end_wildcard = '%')
+    public function like (string $start_wildcard = '%', string $value, string $end_wildcard = '%') : self
     {
         // (Composing the query)
         $this->op('LIKE')->value( "'" . $start_wildcard . $this->connection->sanitize_text( $value ) . $end_wildcard . "'", true );
@@ -444,8 +524,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function search (string $value, string $format = '%V%', array $fields)
+    public function search (string $value, string $format = '%V%', array $fields) : self
     {
         // (Getting the value)
         $fields = array_unique( $fields );
@@ -500,8 +579,7 @@ class Condition
         return $this;
     }
 
-    # Returns [self]
-    public function search_values (array $values, string $format = '%V%')
+    public function search_values (array $values, string $format = '%V%') : self
     {
         // (Getting the value)
         $num_fields = count( array_keys( $values ) );
@@ -546,8 +624,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function between (mixed $min, mixed $max)
+    public function between (mixed $min, mixed $max) : self
     {
         // (Composing the query)
         $this->op('BETWEEN')->value($min)->and()->value($max);
@@ -560,22 +637,19 @@ class Condition
 
 
 
-    # Returns [self]
-    public function not ()
+    public function not () : self
     {
         // Returning the value
         return $this->where_raw(' NOT ');
     }
 
-    # Returns [self]
-    public function and ()
+    public function and () : self
     {
         // Returning the value
         return $this->where_raw(' AND ');
     }
 
-    # Returns [self]
-    public function or ()
+    public function or () : self
     {
         // Returning the value
         return $this->where_raw(' OR ');
@@ -583,8 +657,7 @@ class Condition
 
 
 
-    # Returns [Query|Model]
-    public function condition_end ()
+    public function condition_end () : Query|Model
     {
         // Returning the value
         return $this->query ?? $this->model;
@@ -592,8 +665,7 @@ class Condition
 
 
 
-    # Returns [self]
-    public function fill (array $values)
+    public function fill (array $values) : self
     {
         foreach ( $values as $k => $v )
         {// Processing each entry
@@ -609,8 +681,7 @@ class Condition
 
 
 
-    # Returns [string]
-    public function __toString ()
+    public function __toString () : string
     {
         // Returning the value
         return $this->value === '' ? '1' : $this->value;
