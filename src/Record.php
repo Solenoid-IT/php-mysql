@@ -97,7 +97,7 @@ class Record extends \stdClass
     public function to_array () : array
     {
         // Returning the value
-        return json_decode( json_encode( $this ), true );
+        return json_decode( json_encode( $this->values ), true );
     }
 
 
