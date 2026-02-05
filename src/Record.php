@@ -102,6 +102,56 @@ class Record extends \stdClass
 
 
 
+    public function iterate (mixed $target = null, string $prefix = '') : \Generator
+    {
+        // (Getting the value)
+        $current = $target ?? $this->values;
+
+
+
+        // (Getting the value)
+        $keys = array_keys( (array) $current );
+
+
+
+        foreach ( $keys as $key ) 
+        {// Processing each entry
+            // (Getting the values)
+            $full_key = $prefix === '' ? (string) $key : "$prefix.$key";
+            $value    = $current->$key;
+
+            if ( is_object( $value ) || is_array( $value ) ) 
+            {// (Node found)
+                // (Yielding the value)
+                yield from $this->iterate( $value, $full_key );
+
+
+
+                if ( is_object( $value ) && count( get_object_vars( $value ) ) === 0 )
+                {// Match OK
+                    // (Unsetting the element)
+                    unset( $current->$key );
+                }
+                else
+                if ( is_array( $value ) && count( $value ) === 0 )
+                {// Match OK
+                    // (Removing the element)
+                    unset( $current->$key );
+                }
+            } 
+            else 
+            {// (Leaf found)
+                // (Yielding the result pair)
+                yield [ $full_key, $value ];
+
+                // (Removing the element)
+                unset( $current->$key );
+            }
+        }
+    }
+
+
+
     public function __get (string $key)
     {
         // Returning the value
