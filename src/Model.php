@@ -225,7 +225,12 @@ class Model
 
 
             // (Getting the value)
-            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list( $fields );
+            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list( [ $relation->foreign_key, ...$fields ] );
+
+
+
+            // (Getting the value)
+            $fk_field = in_array( $relation->foreign_key, $fields );
 
 
 
@@ -236,6 +241,16 @@ class Model
             {// Processing each entry
                 // (Getting the value)
                 $fk_value = $related_record->{ $relation->foreign_key };
+
+
+
+                if ( !$fk_field )
+                {// (Fk field is not required)
+                    // (Removing the element)
+                    unset( $related_record->{ $relation->foreign_key } );
+                }
+
+
 
                 // (Appending the value)
                 $remote_records[ $fk_value ][] = $related_record;
