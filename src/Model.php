@@ -247,7 +247,7 @@ class Model
                 if ( !$fk_field )
                 {// (Fk field is not required)
                     // (Removing the element)
-                    #unset( $related_record->{ $relation->foreign_key } );
+                    unset( $related_record->{ $relation->foreign_key } );
                 }
 
 
