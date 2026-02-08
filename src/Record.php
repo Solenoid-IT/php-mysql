@@ -73,7 +73,7 @@ class Record extends \stdClass
         return $current;
     }
 
-    public function set_relation (string $name, array $value) : self
+    public function set_relation (string $name, array|self $value) : self
     {
         // (Getting the value)
         $this->relations->{ $name } = $value;
