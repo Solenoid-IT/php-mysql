@@ -24,20 +24,16 @@ class Relation
 
 
 
-    public static function resolve (string $model_class) : self|null
+    public static function resolve (string $src, string $dst) : self|null
     {
-        if ( !is_subclass_of( $model_class, Model::class ) ) return null;
-
-
-
-        // (Getting the value)
-        $model_name = end( explode( '\\', $model_class ) );
+        if ( !is_subclass_of( $src, Model::class ) ) return null;
+        if ( !is_subclass_of( $dst, Model::class ) ) return null;
 
     
 
-        foreach ( ( new \ReflectionClass( $model_class ) )->getAttributes( self::class ) as $attribute )
+        foreach ( ( new \ReflectionClass( $src ) )->getAttributes( self::class ) as $attribute )
         {// Processing each entry
-            if ( $attribute->getArguments()[0]['name'] !== $model_name ) continue;
+            if ( $attribute->getArguments()[0]['model'] !== $dst ) continue;
 
 
 

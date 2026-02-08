@@ -147,7 +147,7 @@ class Model
 
 
         // Returning the value
-        return Relation::resolve( $class ) ?? new Relation( $class );
+        return Relation::resolve( $this::class, $class ) ?? new Relation( $class );
     }
 
     private function get_related_model (string|object $model) : self
@@ -260,7 +260,7 @@ class Model
                     break;
 
                     case 'belongsTo':
-                        // (Setting the value)
+                        // (Getting the value)
                         $remote_records[ $fk_value ] = $related_record;
                     break;
                 }
