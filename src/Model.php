@@ -19,8 +19,6 @@ class Model
     private array $rels;
     private array $links;
 
-    private static string $subclass_prefix;
-
 
 
     public Connection $connection;
@@ -149,7 +147,7 @@ class Model
 
 
         // Returning the value
-        return new Relation( $class );
+        return Relation::resolve( $class ) ?? new Relation( $class );
     }
 
     private function get_related_model (string|object $model) : self
@@ -1071,20 +1069,6 @@ class Model
 
         // Returning the value
         return $relations;
-    }
-
-
-
-    public static function get_subclass_prefix () : string
-    {
-        // Returning the value
-        return isset( self::$subclass_prefix ) ? self::$subclass_prefix : '';
-    }
-
-    public static function set_subclass_prefix (string $prefix) : void
-    {
-        // (Getting the value)
-        self::$subclass_prefix = $prefix;
     }
 
 
