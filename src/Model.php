@@ -252,8 +252,18 @@ class Model
 
 
 
-                // (Appending the value)
-                $remote_records[ $fk_value ][] = $related_record;
+                switch ( $relation->type )
+                {
+                    case 'hasMany':
+                        // (Appending the value)
+                        $remote_records[ $fk_value ][] = $related_record;       
+                    break;
+
+                    case 'belongsTo':
+                        // (Setting the value)
+                        $remote_records[ $fk_value ] = $related_record;
+                    break;
+                }
             }
 
 
@@ -264,7 +274,7 @@ class Model
                 $pk_value = $record->{ $relation->local_key };
 
                 // (Getting the value)
-                $related_data = $remote_records[ $pk_value ] ?? [];
+                $related_data = $remote_records[ $pk_value ] ?? ( $relation->type === 'hasMany' ? [] : null );
 
                 // (Setting the relation)
                 $record->set_relation( $related_model->table, $related_data );
