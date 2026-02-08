@@ -147,7 +147,7 @@ class Model
 
 
         // Returning the value
-        return Relation::resolve( $this::class, $class ) ?? new Relation( $class );
+        return Relation::resolve( $this::class, $class ) ?? new Relation( '', $class );
     }
 
     private function get_related_model (string|object $model) : self
@@ -277,7 +277,7 @@ class Model
                 $related_data = $remote_records[ $pk_value ] ?? ( $relation->type === Relation::HAS_MANY ? [] : null );
 
                 // (Setting the relation)
-                $record->set_relation( $relation->name ?? $related_model->table, $related_data );
+                $record->set_relation( $relation->name === '' ? $related_model->table : $relation->name, $related_data );
             }
         }
 
