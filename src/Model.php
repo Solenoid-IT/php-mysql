@@ -277,7 +277,7 @@ class Model
                 $related_data = $remote_records[ $pk_value ] ?? ( $relation->type === Relation::HAS_MANY ? [] : null );
 
                 // (Setting the relation)
-                $record->set_relation( $related_model->table, $related_data );
+                $record->set_relation( $relation->name ?? $related_model->table, $related_data );
             }
         }
 

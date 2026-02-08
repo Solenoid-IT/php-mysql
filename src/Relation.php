@@ -20,6 +20,7 @@ class Relation
 
     public function __construct
     (
+        public string $name,
         public string $model,
         public string $type = self::HAS_MANY,
         public string $local_key = 'id',
@@ -44,7 +45,7 @@ class Relation
 
 
             // (Getting the value)
-            $current_dst = $args['model'] ?? $args[0] ?? null;
+            $current_dst = $args['model'] ?? $args[1] ?? null;
 
             if ( $current_dst !== $dst ) continue;
 
