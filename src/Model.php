@@ -19,6 +19,8 @@ class Model
     private array $rels;
     private array $links;
 
+    private static string $subclass_prefix;
+
 
 
     public Connection $connection;
@@ -1052,6 +1054,37 @@ class Model
 
         // Returning the value
         return $keys;
+    }
+
+    public static function get_relations (string|self $model) : array
+    {
+        // (Setting the value)
+        $relations = [];
+
+        foreach ( ( new \ReflectionClass( $model ) )->getAttributes( Relation::class ) as $attribute )
+        {// Processing each entry
+            // (Appending the value)
+            $relations[] = $attribute->newInstance();
+        }
+
+
+
+        // Returning the value
+        return $relations;
+    }
+
+
+
+    public static function get_subclass_prefix () : string
+    {
+        // Returning the value
+        return isset( self::$subclass_prefix ) ? self::$subclass_prefix : '';
+    }
+
+    public static function set_subclass_prefix (string $prefix) : void
+    {
+        // (Getting the value)
+        self::$subclass_prefix = $prefix;
     }
 
 
