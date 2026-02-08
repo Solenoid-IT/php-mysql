@@ -33,7 +33,15 @@ class Relation
 
         foreach ( ( new \ReflectionClass( $src ) )->getAttributes( self::class ) as $attribute )
         {// Processing each entry
-            if ( $attribute->getArguments()[0]['model'] !== $dst ) continue;
+            // (Getting the value)
+            $args = $attribute->getArguments();
+
+
+
+            // (Getting the value)
+            $current_dst = $args['model'] ?? $args[0] ?? null;
+
+            if ( $current_dst !== $dst ) continue;
 
 
 
