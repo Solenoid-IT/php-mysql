@@ -13,10 +13,15 @@ use \Attribute;
 #[ Attribute( Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE ) ]
 class Relation
 {
+    public const HAS_MANY   = 'hasMany';
+    public const BELONGS_TO = 'belongsTo';
+
+
+
     public function __construct
     (
         public string $model,
-        public string $type = 'hasMany',
+        public string $type = self::HAS_MANY,
         public string $local_key = 'id',
         public string $foreign_key = 'id'
     )
