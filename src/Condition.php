@@ -524,7 +524,7 @@ class Condition
 
 
 
-    public function search (string $value, string $format = '%V%', array $fields) : self
+    public function filter_global (string $value, string $format = '%V%', array $fields) : self
     {
         // (Getting the value)
         $fields = array_unique( $fields );
@@ -579,7 +579,7 @@ class Condition
         return $this;
     }
 
-    public function search_values (array $values, string $format = '%V%') : self
+    public function filter_local (array $values, string $format = '%V%') : self
     {
         // (Getting the value)
         $num_fields = count( array_keys( $values ) );

@@ -942,7 +942,7 @@ class Model
 
 
 
-    public function search (string $value, string $format = '%V%', array $fields = []) : self
+    public function filter_global (string $value, string $format = '%V%', array $fields = []) : self
     {
         // (Getting the value)
         $fields = $fields ? $fields : array_keys( $this->describe() );
@@ -950,7 +950,7 @@ class Model
 
 
         // (Getting the value)
-        $this->condition->search( $value, $format, $fields );
+        $this->condition->filter_global( $value, $format, $fields );
 
 
 
@@ -958,10 +958,10 @@ class Model
         return $this;
     }
 
-    public function search_values (array $values, string $format = '%V%') : self
+    public function filter_local (array $values, string $format = '%V%') : self
     {
         // (Getting the value)
-        $this->condition->search_values( $values, $format );
+        $this->condition->filter_local( $values, $format );
 
 
 
