@@ -6,6 +6,11 @@ namespace Solenoid\MySQL;
 
 
 
+use \Attribute;
+
+
+
+#[ Attribute( Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE ) ]
 class Relation
 {
     public function __construct
@@ -16,6 +21,35 @@ class Relation
         public string $foreign_key = 'id'
     )
     {}
+
+
+
+    public static function resolve (string $model) : self|null
+    {
+        if ( !is_subclass_of( $model, Model::class ) ) return null;
+
+
+
+        // (Getting the value)
+        $model_name = end( explode( '\\', $model ) );
+
+    
+
+        foreach ( ( new \ReflectionClass( $model ) )->getAttributes( self::class ) as $attribute )
+        {// Processing each entry
+            if ( $attribute->getArguments()[0]['name'] !== $model_name ) continue;
+
+
+
+            // Returning the value
+            return $attribute->newInstance();
+        }
+
+
+
+        // Returning the value
+        return null;
+    }
 }
 
 
