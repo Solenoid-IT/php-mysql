@@ -505,7 +505,7 @@ class Connection
     # Returns [string|false] | Throws [Exception]
     public function fill_vars (string $text, array $kv_data)
     {
-        foreach ($kv_data as $k => $v)
+        foreach ( $kv_data as $k => $v )
         {// Processing each entry
             // (Normalizing the value)
             $nv = $this->normalize_value( $v );
@@ -527,6 +527,7 @@ class Connection
             // (Getting the value)
             $text = str_replace( "{! $k !}", $v, $text );
             $text = str_replace( "{{ $k }}", $nv, $text );
+            $text = str_replace( ":$k", $nv, $text );
         }
 
 
@@ -537,8 +538,7 @@ class Connection
 
 
 
-    # Returns [self|false] | Throws [Exception]
-    public function execute (string $command, array $values = [], ?string &$query_debug = '')
+    public function execute (string $command, array $values = [], bool $stream = false) : self|false
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -557,15 +557,57 @@ class Connection
 
 
 
+        if ( $this->mysqli_result )
+        {// Value found
+            // (Freeing the memory)
+            mysqli_free_result( $this->mysqli_result );
+        }
+
+
+
         // (Setting the value)
         $this->mysqli_result = null;
 
 
 
-        // (Filling the variables)
-        $command = $this->fill_vars( $command, $values );
+        // (Setting the value)
+        $ordered_values = [];
 
-        if ( $command === false )
+        // (Getting the value)
+        $prepared_command = preg_replace_callback
+        (
+            '/(?<!:):([a-zA-Z0-9_]+)/',
+            function ($matches) use ($values, &$ordered_values)
+            {
+                // (Getting the value)
+                $key = $matches[1];
+
+                if ( !array_key_exists( $key, $values ) )
+                {// Value not found
+                    // Throwing the exception
+                    throw new \Exception( "Missing value for named parameter :$key" );
+                }
+
+
+
+                // (Appending the value)
+                $ordered_values[] = $values[ $key ];
+
+
+
+                // Returning the value
+                return '?'; 
+            },
+            $command
+        )
+        ;
+
+
+
+        // (Filling the variables)
+        $simulated_command = $this->fill_vars( $prepared_command, $values );
+
+        if ( $simulated_command === false )
         {// (Unable to fill the variables)
             // (Setting the value)
             $message = "Unable to fill the variables";
@@ -579,59 +621,117 @@ class Connection
 
 
 
-        // (Triggering the event)
-        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $command ] );
+        // (Getting the value)
+        $stmt = mysqli_prepare( $this->c, $prepared_command );
 
-
-
-        // (Triggering the event)
-        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $command ] );
-
-
-
-        if ( $query_debug !== '' )
-        {// Value found
-            // (Getting the value)
-            $query_debug = $command;
-
-
-
-            // Returning the value
-            return $this;
-        }
-
-        if ( $this->debug )
-        {// (Debug is enabled)
-            // (Appending the value)
-            $this->queries[] = $command;
-        }
-
-
-
-        // (Getting the result)
-        $result = mysqli_query( $this->c, $command );
-
-        if ( $result === false )
-        {// (Unable to execute the query)
+        if ( !$stmt )
+        {// (Unable to prepare the statement)
             // (Triggering the event)
-            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $command ] );
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $simulated_command, 'message' => 'Unable to prepate the statement' ] );
 
 
 
             // Returning the value
             return false;
         }
-        else
-        if ($result === true)
-        {// (The query command has been executed correctly)
-            // Returning the value
-            return $this;
+
+
+
+        if ( $ordered_values )
+        {// Value is not empty
+            // (Setting the values)
+            $types  = '';
+            $params = [];
+
+            foreach ( $ordered_values as $v )
+            {// Processing each entry
+                if ( is_int( $v ) ) $types .= 'i';
+                else
+                if ( is_float( $v ) ) $types .= 'd';
+                else
+                if ( is_bool( $v ) )
+                {// Match OK
+                    // (Appending the value) 
+                    $types .= 'i'; 
+
+                    // (Getting the value)
+                    $v = $v ? 1 : 0; 
+                }
+                else
+                if ( is_null( $v ) ) $types .= 's'; 
+                else $types .= 's';
+
+
+
+                // (Appending the value)
+                $params[] = $v;
+            }
+
+
+
+            // (Binding the params)
+            mysqli_stmt_bind_param( $stmt, $types, ...$params );
         }
-        else
-        {// (Response-Type is a 'mysqli_result')
+
+
+
+        // (Triggering the event)
+        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $simulated_command ] );
+
+
+
+        // (Triggering the event)
+        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $simulated_command ] );
+
+
+
+        if ( $this->debug )
+        {// (Debug is enabled)
+            // (Appending the value)
+            $this->queries[] = $simulated_command;
+        }
+
+
+
+        if ( !mysqli_stmt_execute( $stmt ) )
+        {// (Unable to execute the statement)
+            // (Triggering the event)
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $simulated_command, 'message' => 'Unable to execute the statement' ] );
+
+
+
+            // (Closing the statement)
+            mysqli_stmt_close( $stmt );
+
+
+
+            // Returning the value
+            return false;
+        }
+
+
+
+        if ( !$stream )
+        {// (Mode is 'Buffered')
+            // (Storing the result)
+            mysqli_stmt_store_result( $stmt );
+        }
+
+
+
+        // (Getting the value)
+        $result = mysqli_stmt_get_result( $stmt );
+
+        if ( $result !== false )
+        {// (Result found)
             // (Getting the value)
             $this->mysqli_result = $result;
         }
+
+
+
+        // (Closing the statement)
+        mysqli_stmt_close( $stmt );
 
 
 
@@ -733,6 +833,8 @@ class Connection
         return $this;
     }
 
+    /* ahcid to deleted
+
     public function execute_stream (string $command, array $values = []) : self|false
     {
         if ( $this->mysqli_result )
@@ -786,6 +888,8 @@ class Connection
         // Returning the value
         return $this;
     }
+
+    */
 
 
 

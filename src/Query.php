@@ -374,7 +374,7 @@ class Query
     {
         if ( $stream )
         {// Value is true
-            if ( !$this->connection->execute_stream( $this ) )
+            if ( !$this->connection->execute( (string) $this, stream: true ) )
             {// (Unable to execute the cmd)
                 // (Setting the value)
                 $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
