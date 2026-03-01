@@ -936,7 +936,7 @@ class Connection
     # Returns [self]
     public function trigger_event (string $type, array $data = [])
     {
-        foreach ( $this->event_listeners[ $type ] as $event_listener )
+        foreach ( $this->event_listeners[ $type ] ?? [] as $event_listener )
         {// Processing each entry
             // (Calling the function)
             $event_listener( $data );
