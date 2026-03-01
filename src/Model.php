@@ -10,6 +10,8 @@ use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Relation;
 
+use \Solenoid\MySQL\Cursor\Cursor;
+
 
 
 class Model
@@ -612,13 +614,13 @@ class Model
 
 
         // Returning the value
-        return (int) $query->run()->set_mode( 'value' )->fetch_head();
+        return (int) $query->run()->value();
     }
 
     public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null) : Record|false
     {
         // (Getting the value)
-        $record = $this->build_query( $fields, $exclude_fields )->run()->fetch_head( $transform_record );
+        $record = $this->build_query( $fields, $exclude_fields )->run()->head();
 
         if ( !$record || !$this->links )
         {// Match failed

@@ -7,6 +7,7 @@ namespace Solenoid\MySQL;
 
 
 use \Solenoid\MySQL\Condition;
+use \Solenoid\MySQL\Cursor\Cursor;
 
 
 
@@ -404,7 +405,7 @@ class Query
 
 
         // Returning the value
-        return $this->connection->fetch_cursor();
+        return $this->connection->cursor();
     }
 
 

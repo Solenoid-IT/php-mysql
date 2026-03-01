@@ -203,7 +203,7 @@ class Table
 
 
         // Returning the value
-        return $this->connection->fetch_cursor()->list();
+        return $this->connection->cursor()->list();
     }
 
     # Returns [array<string>|false] | Throws [Exception]
@@ -240,7 +240,7 @@ class Table
 
 
         // Returning the value
-        return $this->connection->fetch_cursor()->set_mode('value')->list();
+        return $this->connection->cursor()->set_mode('value')->list();
     }
 }
 

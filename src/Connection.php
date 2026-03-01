@@ -8,6 +8,10 @@ namespace Solenoid\MySQL;
 
 use \Solenoid\MySQL\Entity;
 
+use \Solenoid\MySQL\Cursor\Cursor;
+use \Solenoid\MySQL\Cursor\BufferedCursor;
+use \Solenoid\MySQL\Cursor\UnbufferedCursor;
+
 
 
 class Connection
@@ -24,6 +28,8 @@ class Connection
 
     public ?string  $database;
 
+    public string   $simulated_command;
+
     private ?string  $socket;
 
     private string   $charset;
@@ -31,7 +37,8 @@ class Connection
     private          $debug;
     private          $queries;
 
-    private          $mysqli_result;
+    private          $mysqli_result = null;
+    private          $mysqli_stmt = null;
 
     private string   $insert_mode;
 
@@ -43,7 +50,6 @@ class Connection
 
 
 
-    # Returns [self]
     public function __construct
     (
         ?string $host     = null,
@@ -92,8 +98,7 @@ class Connection
 
 
 
-    # Returns [self]
-    public function set_debug (bool $value)
+    public function set_debug (bool $value) : self
     {
         // (Getting the value)
         $this->debug = $value;
@@ -104,8 +109,7 @@ class Connection
         return $this;
     }
 
-    # Returns [self]
-    public function set_charset (string $value)
+    public function set_charset (string $value) : self
     {
         // (Getting the value)
         $this->charset = $value;
@@ -118,9 +122,12 @@ class Connection
 
 
 
-    # Returns [self|false]
-    public function open ()
+    public function open () : self|false
     {
+        if ( $this->c ) return $this;
+
+
+
         // (Opening the connection)
         $this->c = mysqli_connect
         (
@@ -158,7 +165,7 @@ class Connection
         }
 
         // (Getting the value)
-        $this->timezone_hms = $this->fetch_cursor()->set_mode('value')->fetch_head();
+        $this->timezone_hms = $this->cursor()->value();
         $this->timezone_hms = $this->timezone_hms[0] === '-' ? $this->timezone_hms : '+' . $this->timezone_hms;
 
 
@@ -172,8 +179,7 @@ class Connection
         return $this;
     }
 
-    # Returns [self|false]
-    public function close ()
+    public function close () : self|false
     {
         if ( !mysqli_close( $this->c ) )
         {// (Unable to close the connection)
@@ -199,22 +205,19 @@ class Connection
 
 
 
-    # Returns [int]
-    public function get_error_code ()
+    public function get_error_code () : int
     {
         // Returning the value
         return mysqli_errno( $this->c );
     }
-    
-    # Returns [string]
-    public function get_error_msg ()
+
+    public function get_error_msg () : string
     {
         // Returning the value
         return mysqli_error( $this->c );
     }
 
-    # Returns [assoc]
-    public function get_errors ()
+    public function get_errors () : array
     {
         // Returning the value
         return
@@ -234,8 +237,7 @@ class Connection
         ;
     }
 
-    # Returns [string]
-    public function get_error_text ()
+    public function get_error_text () : string
     {
         // (Getting the value)
         $errors = $this->get_errors();
@@ -267,8 +269,7 @@ class Connection
 
 
 
-    # Returns [self|false]
-    public function set_var (string $key, string $value)
+    public function set_var (string $key, string $value) : self|false
     {
         // (Getting the value)
         $query = "SET $key = $value;";
@@ -285,8 +286,7 @@ class Connection
         return $this;
     }
 
-    # Returns [self|false]
-    public function set_foreign_key_check (bool $value)
+    public function set_foreign_key_check (bool $value) : self|false
     {
         if ( $this->set_var( 'foreign_key_checks', $value ? '1' : '0' ) === false )
         {// (Unable to execute the query)
@@ -302,15 +302,13 @@ class Connection
 
 
 
-    # Returns [string]
-    public function get_insert_mode ()
+    public function get_insert_mode () : string
     {
         // Returning the value
         return $this->insert_mode;
     }
 
-    # Returns [self|false] | Throws [Exception]
-    public function set_insert_mode (string $value = 'standard')
+    public function set_insert_mode (string $value = 'standard') : self|false
     {
         switch ( $value )
         {
@@ -343,8 +341,7 @@ class Connection
 
 
 
-    # Returns [self|false] | Throws [Exception]
-    public function select_db (string $value)
+    public function select_db (string $value) : self|false
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -381,8 +378,7 @@ class Connection
 
 
 
-    # Returns [string|false] | Throws [Exception]
-    public function sanitize_text (string $text)
+    public function sanitize_text (string $text) : string|false
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -405,8 +401,7 @@ class Connection
         return mysqli_real_escape_string( $this->c, $text );
     }
 
-    # Returns [string|false] | Throws [Exception]
-    public function normalize_value ($value)
+    public function normalize_value ($value) : string|false
     {
         switch ( gettype( $value ) )
         {
@@ -502,8 +497,7 @@ class Connection
 
 
 
-    # Returns [string|false] | Throws [Exception]
-    public function fill_vars (string $text, array $kv_data)
+    public function fill_vars (string $text, array $kv_data) : string|false
     {
         foreach ( $kv_data as $k => $v )
         {// Processing each entry
@@ -538,6 +532,38 @@ class Connection
 
 
 
+    public function free_result () : self
+    {
+        if ( $this->mysqli_result )
+        {// Value found
+            // (Freeing the memory)
+            mysqli_free_result( $this->mysqli_result );
+
+
+
+            // (Setting the value)
+            $this->mysqli_result = null;
+        }
+
+
+
+        while ( mysqli_more_results( $this->c ) && mysqli_next_result( $this->c ) ) 
+        {// Processing each entry
+            if ( $result = mysqli_store_result( $this->c ) ) 
+            {// (Result found)
+                // (Freeing the memory)
+                mysqli_free_result( $result );
+            }
+        }
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
     public function execute (string $command, array $values = [], bool $stream = false) : self|false
     {
         if ( !$this->c )
@@ -557,16 +583,8 @@ class Connection
 
 
 
-        if ( $this->mysqli_result )
-        {// Value found
-            // (Freeing the memory)
-            mysqli_free_result( $this->mysqli_result );
-        }
-
-
-
-        // (Setting the value)
-        $this->mysqli_result = null;
+        // (Freeing the result)
+        $this->free_result();
 
 
 
@@ -605,7 +623,7 @@ class Connection
 
 
         // (Filling the variables)
-        $simulated_command = $this->fill_vars( $prepared_command, $values );
+        $simulated_command = $this->fill_vars( $command, $values );
 
         if ( $simulated_command === false )
         {// (Unable to fill the variables)
@@ -618,6 +636,11 @@ class Connection
             // Returning the value
             return false;
         }
+
+
+
+        // (Getting the value)
+        $this->simulated_command = $simulated_command;
 
 
 
@@ -711,27 +734,37 @@ class Connection
 
 
 
-        if ( !$stream )
-        {// (Mode is 'Buffered')
-            // (Storing the result)
-            mysqli_stmt_store_result( $stmt );
-        }
-
-
-
-        // (Getting the value)
-        $result = mysqli_stmt_get_result( $stmt );
-
-        if ( $result !== false )
-        {// (Result found)
+        if ( $stream )
+        {// (Mode is 'Unbuffered')
             // (Getting the value)
-            $this->mysqli_result = $result;
+            $this->mysqli_stmt = $stmt;
+
+
+
+            // (Setting the value)
+            $this->mysqli_result = null;
         }
+        else
+        {// (Mode is 'Buffered')
+            // (Getting the value)
+            $result = mysqli_stmt_get_result( $stmt );
+
+            if ( $result !== false )
+            {// (Result found)
+                // (Getting the value)
+                $this->mysqli_result = $result;
+            }
 
 
 
-        // (Closing the statement)
-        mysqli_stmt_close( $stmt );
+            // (Closing the statement)
+            mysqli_stmt_close( $stmt );
+
+
+
+            // (Setting the value)
+            $this->mysqli_stmt = null;
+        }
 
 
 
@@ -739,8 +772,7 @@ class Connection
         return $this;
     }
 
-    # Returns [self|false] | Throws [Exception]
-    public function execute_raw (string $query, array $kv_data = [], ?string &$query_debug = '')
+    public function execute_raw (string $query, array $kv_data = [], ?string &$query_debug = '') : self|false
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -833,71 +865,12 @@ class Connection
         return $this;
     }
 
-    /* ahcid to deleted
-
-    public function execute_stream (string $command, array $values = []) : self|false
-    {
-        if ( $this->mysqli_result )
-        {// Value found
-            // (Freeing the memory)
-            mysqli_free_result( $this->mysqli_result );
-        }
 
 
-
-        // (Getting the value)
-        $data =
-        [
-            'connection'    => $this,
-            'command'       => $command
-        ]
-        ;
-
-        foreach ( [ 'before-execute', 'command' ] as $type )
-        {// Processing each entry
-            // (Triggering the event)
-            $this->trigger_event( $type, $data );
-        }
-
-
-
-        if ( !mysqli_real_query( $this->c, $this->fill_vars( $command, $values ) ) )
-        {// (Unable to execute the command)
-            // Returning the value
-            return false;
-        }
-
-
-
-        // (Getting the value)
-        $result = mysqli_use_result( $this->c );
-
-        if ( $result === false )
-        {// (Unable to get the result)
-            // Returning the value
-            return false;
-        }
-
-
-
-        // (Getting the value)
-        $this->mysqli_result = $result;
-
-
-
-        // Returning the value
-        return $this;
-    }
-
-    */
-
-
-
-    # Returns [Cursor]
-    public function fetch_cursor ()
+    public function cursor () : Cursor
     {
         // (Getting the value)
-        $cursor = new Cursor( $this->mysqli_result );
+        $cursor = $this->mysqli_result ? new BufferedCursor( $this->mysqli_result ) : new UnbufferedCursor( $this->mysqli_stmt );
 
 
 
@@ -912,8 +885,7 @@ class Connection
 
 
 
-    # Returns [string]
-    public function get_last_insert_id ()
+    public function get_last_insert_id () : string
     {
         // Returning the value
         return (string) ( $this->c ? mysqli_insert_id( $this->c ) : 0 );
@@ -921,8 +893,7 @@ class Connection
 
 
 
-    # Returns [self]
-    public function on (string $event_type, callable $callback)
+    public function on (string $event_type, callable $callback) : self
     {
         // (Appending the value)
         $this->event_listeners[ $event_type ][] = $callback;
@@ -933,8 +904,7 @@ class Connection
         return $this;
     }
 
-    # Returns [self]
-    public function trigger_event (string $type, array $data = [])
+    public function trigger_event (string $type, array $data = []) : self
     {
         foreach ( $this->event_listeners[ $type ] ?? [] as $event_listener )
         {// Processing each entry
@@ -950,8 +920,7 @@ class Connection
 
 
 
-    # Returns [Entity]
-    public function fetch_entity (string $database, string $table)
+    public function fetch_entity (string $database, string $table) : Entity
     {
         // Returning the value
         return new Entity( $this, $database, $table );
@@ -959,8 +928,7 @@ class Connection
 
 
 
-    # Returns [string]
-    public function get_timezone_hms (int $depth = 3)
+    public function get_timezone_hms (int $depth = 3) : string
     {
         // Returning the value
         return implode( ':', array_slice( explode( ':', $this->timezone_hms ), 0, $depth ) );
@@ -968,8 +936,7 @@ class Connection
 
 
 
-    # Returns [self]
-    public function set_column_separator (?string $value = null)
+    public function set_column_separator (?string $value = null) : self
     {
         // (Getting the value)
         $this->column_separator = $value;
@@ -982,8 +949,7 @@ class Connection
 
 
 
-    # Returns [assoc|false]
-    public function describe (string $database, string $table)
+    public function describe (string $database, string $table) : array|false
     {
         // (Getting the values)
         $database = str_replace( '`', '', $database );
@@ -1005,7 +971,7 @@ class Connection
 
 
         // (Getting the value)
-        $records = $this->fetch_cursor()->list();
+        $records = $this->cursor()->list();
 
         foreach ( $records as $record )
         {// Processing each entry
@@ -1029,7 +995,6 @@ class Connection
 
 
 
-    # Returns [void]
     public function __destruct ()
     {
         if ( $this->c )
@@ -1041,8 +1006,7 @@ class Connection
 
 
 
-    # Returns [string]
-    public function __toString ()
+    public function __toString () : string
     {
         // Returning the value
         return json_encode( get_object_vars( $this ) );

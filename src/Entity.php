@@ -46,7 +46,7 @@ class Entity
 
 
         // Returning the value
-        return $this->connection->fetch_cursor()->list();
+        return $this->connection->cursor()->list();
     }
 
 
@@ -311,7 +311,7 @@ class Entity
     public function fetch_cursor ()
     {
         // Returning the value
-        return $this->connection->fetch_cursor();
+        return $this->connection->cursor();
     }
 
 

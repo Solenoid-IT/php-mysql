@@ -21,9 +21,15 @@ $connection = new Connection
 
 
 
+$command = 'CREATE DATABASE IF NOT EXISTS `db`;';
+
+$connection->execute( $command );
+
+
+
 $command =
     <<<EOD
-    CREATE TABLE IF NOT EXIST `user`
+    CREATE TABLE IF NOT EXISTS `db`.`user`
     (
         `id`        BIGINT UNSIGNED AUTO_INCREMENT NOT NULL,
 
@@ -31,7 +37,9 @@ $command =
 
         `name`      VARCHAR(255)                   NOT NULL,
 
-        PRIMARY KEY (`id`)
+        PRIMARY KEY (`id`),
+
+        UNIQUE KEY (`name`)
     )
     ;
     EOD
@@ -43,7 +51,7 @@ $connection->execute( $command );
 
 $command = 
     <<<EOD
-    INSERT INTO `user` (`hierarchy`, `name`) VALUES
+    INSERT IGNORE INTO `db`.`user` (`hierarchy`, `name`) VALUES
     (1, 'User 1'),
     (2, 'User 2'),
     (3, 'User 3')
@@ -55,10 +63,13 @@ $connection->execute( $command );
 
 
 
-$command = "SELECT * FROM `user` WHERE `hierarchy` > :hierarchy";
+$command = "SELECT * FROM `db`.`user` WHERE `hierarchy` > :hierarchy";
 $values  = [ 'hierarchy' => 1 ];
 
 $connection->execute( $command, $values );
+
+echo "Command: {$connection->simulated_command}\n\n";
+print_r( $connection->cursor()->list() );
 
 
 
