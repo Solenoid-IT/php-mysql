@@ -335,19 +335,58 @@ class Model
 
 
 
-        // (Setting the value)
+        // (Setting the values)
+        $rows   = [];
         $values = [];
 
-        foreach ( $records as $record )
+        foreach ( $records as $i => $record )
         {// Processing each entry
+            // (Setting the value)
+            $row = '(';
+
+
+
+            // (Setting the value)
+            $j = 0;
+
+            foreach ( $record as $column => $value )
+            {// Processing each entry
+                // (Incrementing the value)
+                $j += 1;
+
+
+
+                // (Getting the value)
+                $placeholder = 'val_' . ( $i + 1 ) . '_' . ( $j + 1 );
+
+
+
+                // (Appending the value)
+                $row .= ":$placeholder";
+
+                if ( $j < count( $record ) ) $row .= ', ';
+
+
+
+                // (Getting the value)
+                $values[ $placeholder ] = $value;
+            }
+
+
+
             // (Appending the value)
-            $values[] = '(' . implode( ',', array_map( function ($v) { return $this->connection->normalize_value( $v ); }, array_values( $record ) ) ) . ')';
+            $row .= ')';
+
+
+
+            // (Appending the value)
+            $rows[] = $row;
         }
 
 
 
         // (Getting the value)
-        $values = implode( ",\n", $values );
+        $rows = implode( ",\n", $rows );
 
 
 
@@ -357,17 +396,17 @@ class Model
 
 
         // (Getting the value)
-        $query =
+        $sql =
             <<<EOD
             INSERT$ignore INTO `$this->database`.`$this->table` ($columns)
             VALUES
-                $values
+            $rows
             ;
             EOD
         ;
 
-        if ( !$this->connection->execute( $query ) )
-        {// (Unable to execute the cmd)
+        if ( !$this->connection->execute( new Command( $sql, $values ) ) )
+        {// (Unable to execute the command)
             // Returning the value
             return false;
         }
@@ -391,13 +430,39 @@ class Model
 
 
 
+        // (Setting the values)
+        $command_values = [];
+        $kv_values      = [];
+
+
+
         // (Setting the value)
-        $kv_values = [];
+        $i = 0;
 
         foreach ( $values as $k => $v )
         {// Processing each entry
+            // (Incrementing the value)
+            $i += 1;
+
+
+
+            // (Getting the value)
+            $placeholder = 'update_val_' . ( $i + 1 );
+
+
+
+            // (Getting the value)
+            $k = str_replace( '`', '', $k );
+
+
+
             // (Appending the value)
-            $kv_values[] = '`' . str_replace( '`', '', $k ) . '`' . ' = ' . $this->connection->normalize_value( $v );
+            $kv_values[] = "`$k` = :$placeholder";
+
+
+
+            // (Getting the value)
+            $command_values[ $placeholder ] = $v;
         }
 
 
@@ -408,7 +473,7 @@ class Model
 
 
         // (Getting the value)
-        $cmd =
+        $sql =
             <<<EOD
             UPDATE `$this->database`.`$this->table`
             SET
@@ -419,8 +484,8 @@ class Model
             EOD
         ;
 
-        if ( !$this->connection->execute( $cmd ) )
-        {// (Unable to execute the cmd)
+        if ( !$this->connection->execute( new Command( $sql, $command_values ) ) )
+        {// (Unable to execute the command)
             // Returning the value
             return false;
         }
@@ -438,8 +503,20 @@ class Model
 
 
 
-        if ( !$this->connection->execute( "DELETE\nFROM\n\t`$this->database`.`$this->table`\nWHERE\n\t$condition\n;" ) )
-        {// (Unable to execute the cmd)
+        // (Getting the value)
+        $sql = 
+            <<<EOD
+            DELETE
+            FROM
+                `$this->database`.`$this->table`
+            WHERE
+                $condition
+            ;
+            EOD
+        ;
+
+        if ( !$this->connection->execute( new Command( $sql ) ) )
+        {// (Unable to execute the command)
             // Returning the value
             return false;
         }
@@ -451,6 +528,8 @@ class Model
     }
 
 
+
+    /* ahcid to implementt
 
     public function set (array $values = [], array $key = [], bool $ignore_error = false) : Cursor|false
     {
@@ -548,6 +627,8 @@ class Model
         // Returning the value
         return $cursor;
     }
+
+    */
 
 
 
@@ -717,7 +798,7 @@ class Model
 
     public function empty () : self|false
     {
-        if ( !$this->connection->execute( "TRUNCATE TABLE `$this->database`.`$this->table`;" ) )
+        if ( !$this->connection->execute( new Command( "TRUNCATE TABLE `$this->database`.`$this->table`;" ) ) )
         {// (Unable to execute the cmd)
             // Returning the value
             return false;
@@ -748,7 +829,7 @@ class Model
 
 
 
-        if ( !$this->connection->execute( "CREATE TABLE `$dst_database`.`$dst_table` LIKE `$this->database`.`$this->table`;" ) )
+        if ( !$this->connection->execute( new Command( "CREATE TABLE `$dst_database`.`$dst_table` LIKE `$this->database`.`$this->table`;" ) ) )
         {// (Unable to execute the cmd)
             // Returning the value
             return false;
@@ -758,7 +839,7 @@ class Model
 
         if ( $copy_data )
         {// Value is true
-            if ( !$this->connection->execute( "INSERT INTO `$dst_database`.`$dst_table` SELECT * FROM `$this->database`.`$this->table`;" ) )
+            if ( !$this->connection->execute( new Command( "INSERT INTO `$dst_database`.`$dst_table` SELECT * FROM `$this->database`.`$this->table`;" ) ) )
             {// (Unable to execute the cmd)
                 // Returning the value
                 return false;
@@ -773,7 +854,7 @@ class Model
 
     public function remove () : self|false
     {
-        if ( !$this->connection->execute( "DROP TABLE IF EXISTS `$this->database`.`$this->table`;" ) )
+        if ( !$this->connection->execute( new Command( "DROP TABLE IF EXISTS `$this->database`.`$this->table`;" ) ) )
         {// (Unable to execute the cmd)
             // Returning the value
             return false;

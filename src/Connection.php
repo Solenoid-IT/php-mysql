@@ -158,7 +158,7 @@ class Connection
 
 
 
-        if ( $this->execute( "SELECT TIMEDIFF( NOW(), UTC_TIMESTAMP ) AS 'timezone';" ) === false )
+        if ( $this->execute( new Command( "SELECT TIMEDIFF( NOW(), UTC_TIMESTAMP ) AS 'timezone';" ) ) === false )
         {// (Unable to get the timezone HMS)
             // Returning the value
             return false;
@@ -274,7 +274,7 @@ class Connection
         // (Getting the value)
         $query = "SET $key = $value;";
 
-        if ( !$this->execute( $query ) )
+        if ( !$this->execute( new Command( $query ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
@@ -497,41 +497,6 @@ class Connection
 
 
 
-    public function fill_vars (string $text, array $kv_data) : string|false
-    {
-        foreach ( $kv_data as $k => $v )
-        {// Processing each entry
-            // (Normalizing the value)
-            $nv = $this->normalize_value( $v );
-
-            if ( $nv === false )
-            {// (Unable to normalize the value)
-                // (Setting the value)
-                $message = "Unable to normalize the value";
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
-            }
-
-
-
-            // (Getting the value)
-            $text = str_replace( "{! $k !}", $v, $text );
-            $text = str_replace( "{{ $k }}", $nv, $text );
-            $text = str_replace( ":$k", $nv, $text );
-        }
-
-
-
-        // Returning the value
-        return $text;
-    }
-
-
-
     public function free_result () : self
     {
         if ( $this->mysqli_result )
@@ -564,7 +529,7 @@ class Connection
 
 
 
-    public function execute (string $command, array $values = [], bool $stream = false) : self|false
+    public function execute (Command $command, bool $stream = false) : self|false
     {
         if ( !$this->c )
         {// (Connection has not been open)
@@ -588,6 +553,11 @@ class Connection
 
 
 
+        // (Setting the connection)
+        $command->set_connection( $this );
+
+
+
         // (Setting the value)
         $ordered_values = [];
 
@@ -595,12 +565,12 @@ class Connection
         $prepared_command = preg_replace_callback
         (
             '/(?<!:):([a-zA-Z0-9_]+)/',
-            function ($matches) use ($values, &$ordered_values)
+            function ($matches) use ($command, &$ordered_values)
             {
                 // (Getting the value)
                 $key = $matches[1];
 
-                if ( !array_key_exists( $key, $values ) )
+                if ( !array_key_exists( $key, $command->values ) )
                 {// Value not found
                     // Throwing the exception
                     throw new \Exception( "Missing value for named parameter :$key" );
@@ -609,38 +579,21 @@ class Connection
 
 
                 // (Appending the value)
-                $ordered_values[] = $values[ $key ];
+                $ordered_values[] = $command->values[ $key ];
 
 
 
                 // Returning the value
                 return '?'; 
             },
-            $command
+            $command->sql
         )
         ;
 
 
 
-        // (Filling the variables)
-        $simulated_command = $this->fill_vars( $command, $values );
-
-        if ( $simulated_command === false )
-        {// (Unable to fill the variables)
-            // (Setting the value)
-            $message = "Unable to fill the variables";
-
-            // Throwing an exception
-            throw new \Exception($message);
-
-            // Returning the value
-            return false;
-        }
-
-
-
         // (Getting the value)
-        $this->simulated_command = $simulated_command;
+        $this->simulated_command = $command->simulate();
 
 
 
@@ -650,7 +603,7 @@ class Connection
         if ( !$stmt )
         {// (Unable to prepare the statement)
             // (Triggering the event)
-            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $simulated_command, 'message' => 'Unable to prepate the statement' ] );
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $this->simulated_command, 'message' => 'Unable to prepate the statement' ] );
 
 
 
@@ -699,19 +652,19 @@ class Connection
 
 
         // (Triggering the event)
-        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $simulated_command ] );
+        $this->trigger_event( 'before-execute', [ 'connection' => $this, 'command' => $this->simulated_command ] );
 
 
 
         // (Triggering the event)
-        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $simulated_command ] );
+        $this->trigger_event( 'command', [ 'connection' => $this, 'command' => $this->simulated_command ] );
 
 
 
         if ( $this->debug )
         {// (Debug is enabled)
             // (Appending the value)
-            $this->queries[] = $simulated_command;
+            $this->queries[] = $this->simulated_command;
         }
 
 
@@ -719,7 +672,7 @@ class Connection
         if ( !mysqli_stmt_execute( $stmt ) )
         {// (Unable to execute the statement)
             // (Triggering the event)
-            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $simulated_command, 'message' => 'Unable to execute the statement' ] );
+            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $this->simulated_command, 'message' => 'Unable to execute the statement' ] );
 
 
 
@@ -764,99 +717,6 @@ class Connection
 
             // (Setting the value)
             $this->mysqli_stmt = null;
-        }
-
-
-
-        // Returning the value
-        return $this;
-    }
-
-    public function execute_raw (string $query, array $kv_data = [], ?string &$query_debug = '') : self|false
-    {
-        if ( !$this->c )
-        {// (Connection has not been open)
-            if ( !$this->open() )
-            {// (Unable to open the connection)
-                // (Setting the value)
-                $message = "Unable to open the connection :: " . $this->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
-            }
-        }
-
-
-
-        // (Filling the variables)
-        $query = $this->fill_vars( $query, $kv_data );
-
-        if ( $query === false )
-        {// (Unable to fill the variables)
-            // (Setting the value)
-            $message = "Unable to fill the variables";
-
-            // Throwing an exception
-            throw new \Exception($message);
-
-            // Returning the value
-            return false;
-        }
-
-
-
-        if ( $query_debug !== '' )
-        {// Value found
-            // (Getting the value)
-            $query_debug = $query;
-
-
-
-            // Returning the value
-            return $this;
-        }
-
-        if ($this->debug)
-        {// (Debug is enabled)
-            // (Appending the value)
-            $this->queries[] = $query;
-        }
-
-
-
-        // (Executing the multiple queries)
-        $result = mysqli_multi_query( $this->c, $query );
-
-        if ( !$result )
-        {// (Unable to execute multiple queries)
-            /*
-
-            if ( self::DEBUG_MODE )
-            {// Value is true
-                // (Getting the value)
-                $message = "Unable to execute the command '$query' :: " . $this->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
-            }
-
-            */
-
-
-
-            // (Triggering the event)
-            $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $query ] );
-
-
-
-            // Returning the value
-            return false;
         }
 
 
@@ -957,7 +817,7 @@ class Connection
 
 
 
-        if ( !$this->execute( "DESCRIBE `$database`.`$table`;" ) )
+        if ( !$this->execute( new Command( "DESCRIBE `$database`.`$table`;" ) ) )
         {// (Unable to execute the cmd)
             // Returning the value
             return false;

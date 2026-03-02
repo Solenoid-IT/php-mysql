@@ -15,8 +15,9 @@ use \Solenoid\MySQL\Model;
 class Condition
 {
     private string     $value;
-
     private string     $current_op;
+
+    private array      $values = [];
 
 
 
@@ -321,7 +322,17 @@ class Condition
 
 
                 // (Getting the value)
-                $value = $this->connection->normalize_value( $value );
+                #$value = $this->connection->normalize_value( $value );
+
+
+
+                // (Getting the value)
+                $placeholder = 'cond_val_' . ( count( $this->values ) + 1 );
+
+
+
+                // (Getting the value)
+                $this->values[ $placeholder ] = $value;
             }
         }
 

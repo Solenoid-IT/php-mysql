@@ -37,7 +37,7 @@ class Entity
     # Returns [assoc|false]
     public function list_columns ()
     {
-        if ( !$this->connection->execute( "SHOW FIELDS FROM `$this->database`.`$this->table`" ) )
+        if ( !$this->connection->execute( new Command( "SHOW FIELDS FROM `$this->database`.`$this->table`" ) ) )
         {// (Unable to get the fields metadata)
             // Returning the value
             return false;
@@ -95,7 +95,7 @@ class Entity
             EOD
         ;
 
-        if ( !$this->connection->execute( $query ) )
+        if ( !$this->connection->execute( new Command( $query ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
@@ -230,7 +230,7 @@ class Entity
             EOD
         ;
 
-        if ( !$this->connection->execute( $query ) )
+        if ( !$this->connection->execute( new Command( $query ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
@@ -254,7 +254,7 @@ class Entity
             EOD
         ;
 
-        if ( !$this->connection->execute( $query ) )
+        if ( !$this->connection->execute( new Command( $query ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
@@ -276,7 +276,7 @@ class Entity
             EOD
         ;
 
-        if ( !$this->connection->execute( $query ) )
+        if ( !$this->connection->execute( new Command( $query ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
@@ -293,7 +293,7 @@ class Entity
     # Returns [self|false]
     public function run (string $query, array $kv_data = [])
     {
-        if ( !$this->connection->execute( $query, $kv_data ) )
+        if ( !$this->connection->execute( new Command( $query, $kv_data ) ) )
         {// (Unable to execute the query)
             // Returning the value
             return false;
