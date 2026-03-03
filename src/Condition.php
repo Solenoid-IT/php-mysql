@@ -313,6 +313,12 @@ class Condition extends Code
 
     public function value (mixed $content, bool $raw = false) : self
     {
+        // (Setting the values)
+        $list        = null;
+        $placeholder = null;
+
+
+
         if ( !$raw )
         {// (Value is not raw)
             if ( is_array( $content ) )
@@ -347,24 +353,37 @@ class Condition extends Code
             }
             else
             {// (Value is not an array)
-                if ( $content === null )
-                {// Match OK
-                    if ( $this->current_op === '=' )
-                    {// Match OK
-                        // (Setting the value)
-                        $this->current_op = 'IS';
-                    }
+                if ( is_null( $content ) )
+                {// (Value is null)
+                    if ( $this->current_op === '=' ) $this->current_op = 'IS';
+                    if ( $this->current_op === '<>' ) $this->current_op = 'IS NOT';
+
+
+
+                    // (Setting the value)
+                    $content = 'NULL';
                 }
+                else
+                if ( is_bool( $content ) )
+                {// (Value is a boolean)
+                    if ( $this->current_op === '=' ) $this->current_op = 'IS';
+                    if ( $this->current_op === '<>' ) $this->current_op = 'IS NOT';
 
 
 
-                // (Getting the value)
-                $placeholder = $this->get_placeholder();
+                    // (Getting the value)
+                    $content = $content ? 'TRUE' : 'FALSE';
+                }
+                else
+                {// Match failed
+                    // (Getting the value)
+                    $placeholder = $this->get_placeholder();
 
 
 
-                // (Getting the value)
-                $this->values[ $placeholder ] = $content;
+                    // (Getting the value)
+                    $this->values[ $placeholder ] = $content;
+                }
             }
         }
 

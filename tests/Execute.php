@@ -23,6 +23,12 @@ $connection = new Connection
 
 
 
+$command = new Command( 'DROP DATABASE IF EXISTS `db`;' );
+
+$connection->execute( $command );
+
+
+
 $command = new Command( 'CREATE DATABASE IF NOT EXISTS `db`;' );
 
 $connection->execute( $command );
@@ -39,6 +45,10 @@ $command = new Command
         `hierarchy` INT UNSIGNED                   NOT NULL,
 
         `name`      VARCHAR(255)                   NOT NULL,
+
+        `phone`     VARCHAR(255)                       NULL,
+
+        `enabled`   BOOLEAN                        NOT NULL,
 
         PRIMARY KEY (`id`),
 
@@ -64,15 +74,21 @@ $model->insert
 
         [
             'hierarchy' => 1,
-            'name'      => 'User 1'
+            'name'      => 'User 1',
+            'phone'     => '1234567890',
+            'enabled'   => true
         ],
         [
             'hierarchy' => 2,
-            'name'      => 'User 2'
+            'name'      => 'User 2',
+            'phone'     => '0987654321',
+            'enabled'   => false
         ],
         [
             'hierarchy' => 3,
-            'name'      => 'User 3'
+            'name'      => 'User 3',
+            'phone'     => null,
+            'enabled'   => true
         ]
     ],
 
@@ -81,6 +97,11 @@ $model->insert
 ;
 
 echo "Inserted ID: {$model->last_id()}\n\n";
+
+
+
+#print_r( $model->where( 'enabled', true )->list() );exit;
+#print_r( $model->where( 'phone', 'IS NOT', null )->list() );exit;
 
 
 
