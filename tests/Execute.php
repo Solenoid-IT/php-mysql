@@ -88,6 +88,14 @@ $model->where( 'id', 3 )->update( [ 'name' => 'User 3 (updated)' ] );
 
 
 
+$model->reset();
+
+
+
+$model->where( 'id', 2 )->delete();
+
+
+
 /*
 
 $command = new Command
