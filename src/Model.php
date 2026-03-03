@@ -701,7 +701,7 @@ class Model
         return (int) $query->run()->value();
     }
 
-    public function find (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null) : Record|false
+    public function find (array $fields = [], bool $exclude_fields = false) : Record|null
     {
         // (Getting the value)
         $record = $this->build_query( $fields, $exclude_fields )->run()->head();
@@ -721,10 +721,10 @@ class Model
     /**
      * @return array<Record>
      */
-    public function list (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null) : array
+    public function list (array $fields = [], bool $exclude_fields = false) : array
     {
         // (Getting the value)
-        $records = $this->build_query( $fields, $exclude_fields )->run()->list( $transform_record );
+        $records = $this->build_query( $fields, $exclude_fields )->run()->list();
 
         if ( !$records || !$this->links )
         {// Match failed

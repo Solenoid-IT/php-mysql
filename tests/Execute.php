@@ -128,6 +128,16 @@ print_r( $records );
 
 
 
+/*
+
+$record = $model->where( 'hierarchy', '>', 1 )->find();
+
+print_r( $record );
+
+*/
+
+
+
 $cursor = $model->where( 'hierarchy', '>', 1 )->cursor();
 
 while ( $record = $cursor->read() )
