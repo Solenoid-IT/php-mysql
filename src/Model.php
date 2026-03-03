@@ -10,7 +10,7 @@ use \Solenoid\MySQL\Connection;
 use \Solenoid\MySQL\Condition;
 use \Solenoid\MySQL\Relation;
 
-use \Solenoid\MySQL\Cursor\Cursor;
+use \Solenoid\MySQL\Cursor;
 
 
 
@@ -69,7 +69,7 @@ class Model
                 foreach ( $include_fields as $field )
                 {// Processing each entry
                     // (Composing the query)
-                    $query->select_field( null, $field );
+                    $query->select_field( $field );
                 }
             }
             else
@@ -77,7 +77,7 @@ class Model
                 foreach ( $fields as $field )
                 {// Processing each entry
                     // (Composing the query)
-                    $query->select_field( null, $field );
+                    $query->select_field( $field );
                 }
             }
         }
@@ -92,7 +92,7 @@ class Model
         foreach ( $this->group_columns as $column )
         {// Processing each entry
             // (Composing the query)
-            $query->group_by( null, $column );
+            $query->group_by( $column );
         }
 
         if ( $this->having_raw )
@@ -106,7 +106,7 @@ class Model
         foreach ( $this->order_columns as $column => $direction )
         {// Processing each entry
             // (Composing the query)
-            $query->order_by( null, $column, $direction );
+            $query->order_by( $column, $direction );
         }
 
 
@@ -291,10 +291,10 @@ class Model
 
 
 
-    public function __construct (Connection &$connection, string $database, string $table)
+    public function __construct (Connection $connection, string $database, string $table)
     {
         // (Getting the values)
-        $this->connection    = &$connection;
+        $this->connection    = $connection;
         $this->database      = str_replace( '`', '', $database );
         $this->table         = str_replace( '`', '', $table );
 
@@ -331,7 +331,7 @@ class Model
 
 
         // (Getting the value)
-        $columns = implode( ',', array_map( function ($column) { $column = str_replace( '`', '', $column ); return "`$column`"; }, array_keys( $records[0] ) ) );
+        $columns = implode( ',', array_map( function ($column) { return Code::quote( $column ); }, array_keys( $records[0] ) ) );
 
 
 
@@ -346,8 +346,13 @@ class Model
 
 
 
+            // (Getting the value)
+            $num_columns = count( array_keys( $record ) );
+
+
+
             // (Setting the value)
-            $j = 0;
+            $j = -1;
 
             foreach ( $record as $column => $value )
             {// Processing each entry
@@ -364,7 +369,7 @@ class Model
                 // (Appending the value)
                 $row .= ":$placeholder";
 
-                if ( $j < count( $record ) ) $row .= ', ';
+                if ( $j < $num_columns - 1 ) $row .= ', ';
 
 
 
@@ -420,7 +425,7 @@ class Model
     public function select (Query $query) : Cursor|false
     {
         // Returning the value
-        return $query->from( $this->database, $this->table, 'T', true )->run();
+        return $query->from( $this->table, 'T', $this->database, true )->run();
     }
 
     public function update (array $values) : self|false
@@ -431,7 +436,7 @@ class Model
 
 
         // (Setting the values)
-        $command_values = [];
+        $update_values = [];
         $kv_values      = [];
 
 
@@ -452,17 +457,17 @@ class Model
 
 
             // (Getting the value)
-            $k = str_replace( '`', '', $k );
+            $column = Code::quote( $k );
 
 
 
             // (Appending the value)
-            $kv_values[] = "`$k` = :$placeholder";
+            $kv_values[] = "$column = :$placeholder";
 
 
 
             // (Getting the value)
-            $command_values[ $placeholder ] = $v;
+            $update_values[ $placeholder ] = $v;
         }
 
 
@@ -484,7 +489,7 @@ class Model
             EOD
         ;
 
-        if ( !$this->connection->execute( new Command( $sql, $command_values ) ) )
+        if ( !$this->connection->execute( new Command( $sql, $update_values + $condition->values ) ) )
         {// (Unable to execute the command)
             // Returning the value
             return false;
@@ -506,16 +511,14 @@ class Model
         // (Getting the value)
         $sql = 
             <<<EOD
-            DELETE
-            FROM
-                `$this->database`.`$this->table`
+            DELETE FROM `$this->database`.`$this->table`
             WHERE
                 $condition
             ;
             EOD
         ;
 
-        if ( !$this->connection->execute( new Command( $sql ) ) )
+        if ( !$this->connection->execute( new Command( $sql, $condition->values ) ) )
         {// (Unable to execute the command)
             // Returning the value
             return false;
@@ -640,7 +643,7 @@ class Model
 
 
         // (Composing the query)
-        $query->from( $this->database, $this->table, $table_alias, true );
+        $query->from( $this->table, $table_alias, $this->database, true );
 
 
 
@@ -658,7 +661,7 @@ class Model
 
 
         // (Composing the condition)
-        $this->condition->filter($filter);
+        $this->condition->filter( $filter );
 
 
 
@@ -684,12 +687,12 @@ class Model
         if ( $field )
         {// Value found
             // (Composing the query)
-            $query->count_field( null, $field );
+            $query->count_field( $field );
         }
         else
         {// Value not found
             // (Composing the query)
-            $query->count_all( null, 'num_records' );
+            $query->count_all( 'num_records' );
         }
 
 
@@ -715,8 +718,10 @@ class Model
         return $this->load_links( [ $record ] )[0];
     }
 
-    # Returns [array<Record>]
-    public function list (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null)
+    /**
+     * @return array<Record>
+     */
+    public function list (array $fields = [], bool $exclude_fields = false, ?callable $transform_record = null) : array
     {
         // (Getting the value)
         $records = $this->build_query( $fields, $exclude_fields )->run()->list( $transform_record );
@@ -764,8 +769,10 @@ class Model
 
 
 
-    # Returns [array<int>] | Throws [Exception]
-    public function fetch_ids ()
+    /**
+     * @return array<int>
+     */
+    public function fetch_ids () : array
     {
         // (Getting the values)
         $last  = (int) $this->connection->get_last_insert_id();
@@ -812,8 +819,7 @@ class Model
 
 
 
-    # Returns [assoc|false]
-    public function describe ()
+    public function describe () : array
     {
         // Returning the value
         return $this->connection->describe( $this->database, $this->table );
@@ -855,7 +861,7 @@ class Model
     public function remove () : self|false
     {
         if ( !$this->connection->execute( new Command( "DROP TABLE IF EXISTS `$this->database`.`$this->table`;" ) ) )
-        {// (Unable to execute the cmd)
+        {// (Unable to execute the command)
             // Returning the value
             return false;
         }
@@ -1025,7 +1031,7 @@ class Model
 
 
 
-    public function filter_global (string $value, string $format = '%V%', array $fields = []) : self
+    public function filter_global (string $value, array $fields = [], string $format = '%V%') : self
     {
         // (Getting the value)
         $fields = $fields ? $fields : array_keys( $this->describe() );
@@ -1033,7 +1039,7 @@ class Model
 
 
         // (Getting the value)
-        $this->condition->filter_global( $value, $format, $fields );
+        $this->condition->filter_global( $value, $fields, $format );
 
 
 

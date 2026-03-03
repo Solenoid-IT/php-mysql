@@ -8,9 +8,7 @@ namespace Solenoid\MySQL;
 
 use \Solenoid\MySQL\Entity;
 
-use \Solenoid\MySQL\Cursor\Cursor;
-use \Solenoid\MySQL\Cursor\BufferedCursor;
-use \Solenoid\MySQL\Cursor\UnbufferedCursor;
+use \Solenoid\MySQL\Cursor;
 
 
 
@@ -512,6 +510,19 @@ class Connection
 
 
 
+        if ( $this->mysqli_stmt )
+        {// Value found
+            // (Closing the statement)
+            mysqli_stmt_close( $this->mysqli_stmt );
+
+
+
+            // (Setting the value)
+            $this->mysqli_stmt = null;
+        }
+
+
+
         while ( mysqli_more_results( $this->c ) && mysqli_next_result( $this->c ) ) 
         {// Processing each entry
             if ( $result = mysqli_store_result( $this->c ) ) 
@@ -535,14 +546,8 @@ class Connection
         {// (Connection has not been open)
             if ( !$this->open() )
             {// (Unable to open the connection)
-                // (Setting the value)
-                $message = "Unable to open the connection :: " . $this->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception($message);
-
-                // Returning the value
-                return false;
+                // Throwing the exception
+                throw new \Exception( 'Unable to open the connection :: ' . $this->get_error_text() );
             }
         }
 
@@ -597,18 +602,20 @@ class Connection
 
 
 
-        // (Getting the value)
-        $stmt = mysqli_prepare( $this->c, $prepared_command );
-
-        if ( !$stmt )
-        {// (Unable to prepare the statement)
+        try
+        {
+            // (Getting the value)
+            $stmt = mysqli_prepare( $this->c, $prepared_command );
+        }
+        catch (\Exception $e)
+        {
             // (Triggering the event)
             $this->trigger_event( 'error', [ 'connection' => $this, 'command' => $this->simulated_command, 'message' => 'Unable to prepate the statement' ] );
 
 
 
-            // Returning the value
-            return false;
+            // Throwing the exception
+            throw new \Exception( 'Unable to prepate the statement :: ' . $this->get_error_code() . ' -> ' . $this->get_error_msg() . ' -> ' . $command );
         }
 
 
@@ -687,36 +694,26 @@ class Connection
 
 
 
+        // (Getting the value)
+        $result = mysqli_stmt_get_result( $stmt );
+
+        if ( $result !== false )
+        {// (Result found)
+            // (Getting the value)
+            $this->mysqli_result = $result;
+        }
+
+
+
         if ( $stream )
         {// (Mode is 'Unbuffered')
             // (Getting the value)
             $this->mysqli_stmt = $stmt;
-
-
-
-            // (Setting the value)
-            $this->mysqli_result = null;
         }
         else
         {// (Mode is 'Buffered')
-            // (Getting the value)
-            $result = mysqli_stmt_get_result( $stmt );
-
-            if ( $result !== false )
-            {// (Result found)
-                // (Getting the value)
-                $this->mysqli_result = $result;
-            }
-
-
-
             // (Closing the statement)
             mysqli_stmt_close( $stmt );
-
-
-
-            // (Setting the value)
-            $this->mysqli_stmt = null;
         }
 
 
@@ -730,7 +727,7 @@ class Connection
     public function cursor () : Cursor
     {
         // (Getting the value)
-        $cursor = $this->mysqli_result ? new BufferedCursor( $this->mysqli_result ) : new UnbufferedCursor( $this->mysqli_stmt );
+        $cursor = new Cursor( $this->mysqli_result );
 
 
 

@@ -12,12 +12,9 @@ use \Solenoid\MySQL\Model;
 
 
 
-class Condition
+class Condition extends Code
 {
-    private string     $value;
     private string     $current_op;
-
-    private array      $values = [];
 
 
 
@@ -27,18 +24,18 @@ class Condition
 
 
 
-    public function __construct ()
+    private function get_placeholder () : string
     {
-        // (Setting the value)
-        $this->value = '';
+        // Returning the value
+        return 'cond_val_' . ( count( $this->values ) + 1 );
     }
 
 
 
-    public function set_connection (Connection &$connection) : self
+    public function set_connection (Connection $connection) : self
     {
         // (Getting the value)
-        $this->connection = &$connection;
+        $this->connection = $connection;
 
 
 
@@ -46,10 +43,10 @@ class Condition
         return $this;
     }
 
-    public function set_query (Query &$query) : self
+    public function set_query (Query $query) : self
     {
         // (Getting the value)
-        $this->query = &$query;
+        $this->query = $query;
 
 
 
@@ -57,10 +54,10 @@ class Condition
         return $this;
     }
 
-    public function set_model (Model &$model) : self
+    public function set_model (Model $model) : self
     {
         // (Getting the value)
-        $this->model = &$model;
+        $this->model = $model;
 
 
 
@@ -73,7 +70,7 @@ class Condition
     public function where_raw (string $content) : self
     {
         // (Appending the value)
-        $this->value .= $content;
+        $this->sql .= $content;
 
 
 
@@ -86,15 +83,20 @@ class Condition
     public function where_expr (string $value, bool $raw = false) : self
     {
         if ( !$raw )
-        {// (Subject is not raw)
+        {// (Value is not raw)
             // (Getting the value)
-            $value = $this->connection->normalize_value($value);
+            $placeholder = $this->get_placeholder();
+
+
+
+            // (Getting the value)
+            $this->values[ $placeholder ] = $value;
         }
 
 
 
         // (Appending the value)
-        $this->where_raw($value);
+        $this->where_raw( $raw ? $value : ":$placeholder" );
 
 
 
@@ -102,7 +104,7 @@ class Condition
         return $this;
     }
 
-    public function where_field (?string $table_alias = null, string $column) : self
+    public function where_field (string $column, ?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->where_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
@@ -141,7 +143,7 @@ class Condition
 
 
             // (Composing the condition)
-            $this->where_field( $table_alias, $field );
+            $this->where_field( $field, $table_alias );
 
             if ( $i < $num_fields - 1 )
             {// (Index is not the last)
@@ -170,8 +172,18 @@ class Condition
 
         foreach ( $values as $i => $value )
         {// Processing each entry
+            // (Getting the value)
+            $placeholder = $this->get_placeholder();
+
+
+
+            // (Getting the value)
+            $this->values[ $placeholder ] = $value;
+
+
+
             // (Composing the condition)
-            $this->where_raw( $this->connection->normalize_value( $value ) );
+            $this->where_raw( ":$placeholder" );
 
             if ( $i < $num_values - 1 )
             {// (Index is not the last)
@@ -209,7 +221,7 @@ class Condition
                 [ $column, $operator, $value ] = $args;
 
                 // (Composing the condition)
-                $this->where_field( null, $column )->op( $operator )->value( $value );
+                $this->where_field( $column )->op( $operator )->value( $value );
             break;
 
             case 2:// (Format = CV)
@@ -217,7 +229,7 @@ class Condition
                 [ $column, $value ] = $args;
 
                 // (Composing the condition)
-                $this->where_field( null, $column )->op( '=' )->value( $value );
+                $this->where_field( $column )->op( '=' )->value( $value );
             break;
 
             case 1:// (Format = COV[] or CV[] or RAW)
@@ -243,7 +255,7 @@ class Condition
                                 [ $column, $operator, $value ] = $expr;
 
                                 // (Composing the condition)
-                                $this->where_field( null, $column )->op( $operator )->value( $value );
+                                $this->where_field( $column )->op( $operator )->value( $value );
                             break;
 
                             case 2:// (Format = CV)
@@ -251,7 +263,7 @@ class Condition
                                 [ $column, $value ] = $expr;
 
                                 // (Composing the condition)
-                                $this->where_field( null, $column )->op( '=' )->value( $value );
+                                $this->where_field( $column )->op( '=' )->value( $value );
                             break;
 
                             case 1:// (Format = RAW)
@@ -299,18 +311,43 @@ class Condition
         return $this;
     }
 
-    public function value (mixed $value, bool $raw = false) : self
+    public function value (mixed $content, bool $raw = false) : self
     {
         if ( !$raw )
         {// (Value is not raw)
-            if ( is_array( $value ) )
+            if ( is_array( $content ) )
             {// Value is an array
-                // (Getting the value)
-                $value = '(' . implode( ',', array_map( function ($entry) { return $this->connection->normalize_value( $entry ); }, $value ) ) . ')';
+                // (Setting the value)
+                $list = '(';
+
+                foreach ( $content as $i => $entry )
+                {// Processing each entry
+                    // (Getting the value)
+                    $placeholder = $this->get_placeholder();
+
+
+
+                    // (Appending the value)
+                    $list .= ":$placeholder";
+
+                    if ( $i < count( $content ) - 1 )
+                    {// (Index is not the last)
+                        // (Appending the value)
+                        $list .= ', ';
+                    }
+
+
+
+                    // (Getting the value)
+                    $this->values[ $placeholder ] = $entry;
+                }
+
+                // (Appending the value)
+                $list .= ')';
             }
             else
             {// (Value is not an array)
-                if ( $value === null )
+                if ( $content === null )
                 {// Match OK
                     if ( $this->current_op === '=' )
                     {// Match OK
@@ -322,17 +359,12 @@ class Condition
 
 
                 // (Getting the value)
-                #$value = $this->connection->normalize_value( $value );
+                $placeholder = $this->get_placeholder();
 
 
 
                 // (Getting the value)
-                $placeholder = 'cond_val_' . ( count( $this->values ) + 1 );
-
-
-
-                // (Getting the value)
-                $this->values[ $placeholder ] = $value;
+                $this->values[ $placeholder ] = $content;
             }
         }
 
@@ -347,7 +379,7 @@ class Condition
 
 
         // (Appending the value)
-        $this->where_raw( $value );
+        $this->where_raw( $list ?? ( $placeholder ? ":$placeholder" : $content ) );
 
 
 
@@ -395,7 +427,7 @@ class Condition
 
 
                 // (Composing the condition)
-                $this->where_field( null, $kk  )->op('=')->value( $vv );
+                $this->where_field( $kk  )->op( '=' )->value( $vv );
 
                 if ( $y < $num_y - 1 )
                 {// (Y is not the last one)
@@ -430,17 +462,28 @@ class Condition
     {
         if ( !$raw )
         {// (Values are not raw)
-            foreach ( $values as &$value )
+            // (Setting the value)
+            $placeholders = [];
+
+            foreach ( $values as $value )
             {// Processing each entry
                 // (Getting the value)
-                $value = $this->connection->normalize_value($value);
+                $placeholder = $this->get_placeholder();
+
+                // (Appending the value)
+                $placeholders[] = ":$placeholder";
+
+
+
+                // (Getting the value)
+                $this->values[ $placeholder ] = $value;
             }
         }
 
 
         
         // (Appending the value)
-        $this->where_raw( ' IN ( ' . implode( ', ', $values ) . ' )' );
+        $this->where_raw( ' IN ( ' . implode( ', ', $raw ? $values : $placeholders ) . ' )' );
 
 
 
@@ -452,8 +495,8 @@ class Condition
 
     public function is (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('IS')->value($value);
+        // (Composing the condition)
+        $this->op( 'IS' )->value( $value );
 
 
 
@@ -463,8 +506,8 @@ class Condition
 
     public function is_not (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('IS NOT')->value($value);
+        // (Composing the condition)
+        $this->op( 'IS NOT' )->value( $value );
 
 
 
@@ -476,8 +519,8 @@ class Condition
 
     public function equal (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('=')->value($value);
+        // (Composing the condition)
+        $this->op( '=' )->value( $value );
 
 
 
@@ -487,8 +530,8 @@ class Condition
 
     public function not_equal (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('<>')->value($value);
+        // (Composing the condition)
+        $this->op( '<>' )->value( $value );
 
 
 
@@ -500,8 +543,8 @@ class Condition
 
     public function lt (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('<')->value($value);
+        // (Composing the condition)
+        $this->op( '<' )->value( $value );
 
 
 
@@ -511,8 +554,8 @@ class Condition
 
     public function gt (mixed $value) : self
     {
-        // (Composing the query)
-        $this->op('>')->value($value);
+        // (Composing the condition)
+        $this->op( '>' )->value( $value );
 
 
 
@@ -522,10 +565,10 @@ class Condition
 
 
 
-    public function like (string $start_wildcard = '%', string $value, string $end_wildcard = '%') : self
+    public function like (string $start_wildcard = '%', string $value = '', string $end_wildcard = '%') : self
     {
-        // (Composing the query)
-        $this->op('LIKE')->value( "'" . $start_wildcard . $this->connection->sanitize_text( $value ) . $end_wildcard . "'", true );
+        // (Composing the condition)
+        $this->op( 'LIKE' )->value( "'" . $start_wildcard . $this->connection->sanitize_text( $value ) . $end_wildcard . "'", true );
 
 
 
@@ -535,7 +578,7 @@ class Condition
 
 
 
-    public function filter_global (string $value, string $format = '%V%', array $fields) : self
+    public function filter_global (string $value, array $fields, string $format = '%V%') : self
     {
         // (Getting the value)
         $fields = array_unique( $fields );
@@ -570,7 +613,7 @@ class Condition
 
 
             // (Composing the condition)
-            $this->where_field( $table_alias, $field )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
+            $this->where_field( $field, $table_alias )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
 
             if ( $i < $num_fields - 1 )
             {// (Index is not the last)
@@ -613,7 +656,7 @@ class Condition
 
 
             // (Composing the condition)
-            $this->where_field( null, $field )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
+            $this->where_field( $field )->like( $format[0] === '%' ? '%' : '', $value, $format[2] === '%' ? '%' : '' );
 
             if ( $i < $num_fields - 1 )
             {// (Index is not the last)
@@ -637,8 +680,8 @@ class Condition
 
     public function between (mixed $min, mixed $max) : self
     {
-        // (Composing the query)
-        $this->op('BETWEEN')->value($min)->and()->value($max);
+        // (Composing the condition)
+        $this->op( 'BETWEEN' )->value( $min )->and()->value( $max );
 
 
 
@@ -651,19 +694,19 @@ class Condition
     public function not () : self
     {
         // Returning the value
-        return $this->where_raw(' NOT ');
+        return $this->where_raw( ' NOT ' );
     }
 
     public function and () : self
     {
         // Returning the value
-        return $this->where_raw(' AND ');
+        return $this->where_raw( ' AND ' );
     }
 
     public function or () : self
     {
         // Returning the value
-        return $this->where_raw(' OR ');
+        return $this->where_raw( ' OR ' );
     }
 
 
@@ -681,7 +724,7 @@ class Condition
         foreach ( $values as $k => $v )
         {// Processing each entry
             // (Getting the value)
-            $this->value = str_replace( ":$k", $this->connection->normalize_value( $v ), $this->value );
+            $this->values[ $k ] = $v;
         }
 
 
@@ -694,7 +737,7 @@ class Condition
 
     public function last_lop () : string|null
     {
-        if ( $this->value === '' )
+        if ( $this->sql === '' )
         {// Value is empty
             // Returning the value
             return null;
@@ -703,7 +746,7 @@ class Condition
 
 
         // (Getting the value)
-        $lop = trim( substr( $this->value, -5 ) );
+        $lop = trim( substr( $this->sql, -5 ) );
 
 
 
@@ -716,7 +759,7 @@ class Condition
     public function __toString () : string
     {
         // Returning the value
-        return $this->value === '' ? '1' : $this->value;
+        return $this->sql === '' ? '1' : $this->sql;
     }
 }
 

@@ -7,7 +7,7 @@ namespace Solenoid\MySQL;
 
 
 use \Solenoid\MySQL\Condition;
-use \Solenoid\MySQL\Cursor\Cursor;
+use \Solenoid\MySQL\Cursor;
 
 
 
@@ -28,10 +28,10 @@ class Query
 
 
 
-    public function __construct (Connection &$connection, ?string $name = null)
+    public function __construct (Connection $connection, ?string $name = null)
     {
         // (Getting the values)
-        $this->connection = &$connection;
+        $this->connection = $connection;
         $this->name       = $name;
 
 
@@ -62,7 +62,7 @@ class Query
 
 
 
-    public function from (?string $database = null, string $table, ?string $alias = null, bool $replace = false) : self
+    public function from (string $table, ?string $alias = null, ?string $database = null, bool $replace = false) : self
     {
         // (Getting the value)
         $content = ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' );
@@ -86,7 +86,7 @@ class Query
 
 
 
-    public function natural_join (?string $database = null, string $table, ?string $alias = null) : self
+    public function natural_join (string $table, ?string $alias = null, ?string $database = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' NATURAL JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -97,7 +97,7 @@ class Query
         return $this;
     }
 
-    public function cross_join (?string $database = null, string $table, ?string $alias = null) : self
+    public function cross_join (string $table, ?string $alias = null, ?string $database = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' CROSS JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -110,7 +110,7 @@ class Query
 
 
 
-    public function inner_join (?string $database = null, string $table, ?string $alias = null) : self
+    public function inner_join (string $table, ?string $alias = null, ?string $database = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' INNER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -123,7 +123,7 @@ class Query
 
 
 
-    public function left_outer_join (?string $database = null, string $table, ?string $alias = null) : self
+    public function left_outer_join (string $table, ?string $alias = null, ?string $database = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' LEFT OUTER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -134,7 +134,7 @@ class Query
         return $this;
     }
 
-    public function right_outer_join (?string $database = null, string $table, ?string $alias = null) : self
+    public function right_outer_join (string $table, ?string $alias = null, ?string $database = null) : self
     {
         // (Appending the value)
         $this->from_raw( ' RIGHT OUTER JOIN ' . ( $database ? '`' . $this->connection->sanitize_text( str_replace( '`', '', $database ) ) . '`' . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $table ) ) . '`' . ( $alias ? ' ' . $this->connection->sanitize_text($alias) : '' ) );
@@ -147,7 +147,7 @@ class Query
 
 
 
-    public function on (?string $a_table_alias = null, string $a, string $op, ?string $b_table_alias = null, string $b) : self
+    public function on (string $a, string $op, string $b, ?string $a_table_alias = null, ?string $b_table_alias = null) : self
     {
         // (Getting the value)
         $a_table_alias = $a_table_alias ? ( $this->connection->sanitize_text( str_replace( '`', '', $a_table_alias ) ) . '.' ) : '';
@@ -216,7 +216,7 @@ class Query
 
 
 
-    public function group_by (?string $table_alias = null, string $column) : self
+    public function group_by (string $column, ?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->group[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`';
@@ -240,7 +240,7 @@ class Query
 
 
 
-    public function order_by (?string $table_alias = null, string $column, string $direction) : self
+    public function order_by (string $column, string $direction, ?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->order[] = ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ' . ( $direction === 'ASC' ? 'ASC' : 'DESC' );
@@ -312,7 +312,7 @@ class Query
         return $this;
     }
 
-    public function select_field (?string $table_alias = null, string $column, ?string $name = null) : self
+    public function select_field (string $column, ?string $table_alias = null, ?string $name = null) : self
     {
         // (Appending the value)
         $this->select_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -334,7 +334,7 @@ class Query
         return $this;
     }
 
-    public function select_agg (string $type, ?string $table_alias = null, string $column, ?string $name = null) : self
+    public function select_agg (string $type, string $column, ?string $table_alias = null, ?string $name = null) : self
     {
         // (Appending the value)
         $this->select_raw( $type . '( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column ) ) . '`' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -347,7 +347,7 @@ class Query
 
 
 
-    public function count_all (?string $table_alias = null, ?string $name = null) : self
+    public function count_all (?string $name = null, ?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->select_raw( 'COUNT( ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '*' . ' ) ' . ( $name ? ' AS ' . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' : '' ) );
@@ -358,7 +358,7 @@ class Query
         return $this;
     }
 
-    public function count_field (?string $table_alias = null, string $name) : self
+    public function count_field (string $name, ?string $table_alias = null) : self
     {
         // (Appending the value)
         $this->select_raw( 'COUNT( DISTINCT ' . ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $name ) ) . '`' . ' )' );
@@ -373,33 +373,13 @@ class Query
 
     public function run (bool $stream = false) : Cursor|false
     {
-        if ( $stream )
-        {// Value is true
-            if ( !$this->connection->execute( (string) $this, stream: true ) )
-            {// (Unable to execute the cmd)
-                // (Setting the value)
-                $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
+        // (Getting the value)
+        $command = new Command( (string) $this, isset( $this->condition ) ? $this->condition->values : [] );
 
-                // Throwing an exception
-                throw new \Exception( $message );
-
-                // Returning the value
-                return false;
-            }
-        }
-        else
-        {// Value is false
-            if ( !$this->connection->execute( $this ) )
-            {// (Unable to execute the cmd)
-                // (Setting the value)
-                $message = "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text();
-
-                // Throwing an exception
-                throw new \Exception( $message );
-
-                // Returning the value
-                return false;
-            }
+        if ( !$this->connection->execute( $command, stream: $stream ) )
+        {// (Unable to execute the command)
+            // Throwing the exception
+            throw new \Exception( "Unable to execute the query '$this->name' :: " . $this->connection->get_error_text() );
         }
 
 

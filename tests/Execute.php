@@ -7,6 +7,8 @@ include_once ( __DIR__ . '/../vendor/autoload.php' );
 
 
 use Solenoid\MySQL\Connection;
+use Solenoid\MySQL\Command;
+use Solenoid\MySQL\Model;
 
 
 
@@ -21,13 +23,14 @@ $connection = new Connection
 
 
 
-$command = 'CREATE DATABASE IF NOT EXISTS `db`;';
+$command = new Command( 'CREATE DATABASE IF NOT EXISTS `db`;' );
 
 $connection->execute( $command );
 
 
 
-$command =
+$command = new Command
+(
     <<<EOD
     CREATE TABLE IF NOT EXISTS `db`.`user`
     (
@@ -43,33 +46,86 @@ $command =
     )
     ;
     EOD
+)
 ;
 
 $connection->execute( $command );
 
 
 
-$command = 
-    <<<EOD
-    INSERT IGNORE INTO `db`.`user` (`hierarchy`, `name`) VALUES
-    (1, 'User 1'),
-    (2, 'User 2'),
-    (3, 'User 3')
-    ;
-    EOD
+$model = new Model( $connection, 'db', 'user' );
+$model->empty();
+
+
+
+$model->insert
+(
+    [
+
+        [
+            'hierarchy' => 1,
+            'name'      => 'User 1'
+        ],
+        [
+            'hierarchy' => 2,
+            'name'      => 'User 2'
+        ],
+        [
+            'hierarchy' => 3,
+            'name'      => 'User 3'
+        ]
+    ],
+
+    true
+)
 ;
+
+echo "Inserted ID: {$model->last_id()}\n\n";
+
+
+
+$model->where( 'id', 3 )->update( [ 'name' => 'User 3 (updated)' ] );
+
+
+
+/*
+
+$command = new Command
+(
+    "SELECT * FROM `db`.`user` WHERE `hierarchy` > :hierarchy",
+    [ 'hierarchy' => 1 ]
+)
+;
+
+echo "Command: {$command->simulate()}\n\n";
 
 $connection->execute( $command );
 
-
-
-$command = "SELECT * FROM `db`.`user` WHERE `hierarchy` > :hierarchy";
-$values  = [ 'hierarchy' => 1 ];
-
-$connection->execute( $command, $values );
-
-echo "Command: {$connection->simulated_command}\n\n";
 print_r( $connection->cursor()->list() );
+
+*/
+
+
+
+$model->reset();
+
+
+/*
+
+$records = $model->where( 'hierarchy', '>', 1 )->list();
+
+print_r( $records );
+
+*/
+
+
+
+$cursor = $model->where( 'hierarchy', '>', 1 )->cursor();
+
+while ( $record = $cursor->read() )
+{
+    print_r( $record );
+}
 
 
 
