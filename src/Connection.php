@@ -615,7 +615,7 @@ class Connection
 
 
             // Throwing the exception
-            throw new \Exception( 'Unable to prepate the statement :: ' . $this->get_error_code() . ' -> ' . $this->get_error_msg() . ' -> ' . $command );
+            throw new \Exception( 'Unable to prepate the statement :: ' . $this->get_error_code() . ' -> ' . $this->get_error_msg() . ' -> ' . $this->simulated_command );
         }
 
 
