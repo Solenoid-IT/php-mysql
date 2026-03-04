@@ -21,7 +21,11 @@ class Model
     private array $rels;
     private array $links;
 
+    private static ?ConnectionMap $connection_map = null;
 
+
+
+    public string     $connection_id;
 
     public Connection $connection;
     public string     $database;
@@ -291,10 +295,10 @@ class Model
 
 
 
-    public function __construct (Connection $connection, string $database, string $table)
+    public function __construct (string|Connection $connection, string $database, string $table)
     {
         // (Getting the values)
-        $this->connection    = $connection;
+        $this->connection    = is_string( $connection ) ? self::$connection_map->get( $connection ) : $connection;
         $this->database      = str_replace( '`', '', $database );
         $this->table         = str_replace( '`', '', $table );
 
@@ -1168,6 +1172,27 @@ class Model
 
         // Returning the value
         return $relations;
+    }
+
+
+
+    public static function set_map (ConnectionMap $map) : void
+    {
+        // (Getting the value)
+        self::$connection_map = $map;
+    }
+
+
+
+    public static function fetch () : static
+    {
+        // (Getting the value)
+        $props = ( new \ReflectionClass( static::class ) )->getDefaultProperties();
+
+
+
+        // Returning the value
+        return new static( $props['connection_id'], $props['database'], $props['table'] );
     }
 
 
