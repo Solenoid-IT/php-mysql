@@ -217,7 +217,7 @@ class Cursor
 
 
 
-    protected static array $cached_fields = [];
+    protected static array $cached_models = [];
     
     
 
@@ -256,10 +256,26 @@ class Cursor
             // (Getting the value)
             $model_class = $this->model ? get_class( $this->model ) : null;
 
+            if ( $model_class )
+            {// Value found
+                // (Setting the value)
+                self::$cached_models[ $model_class ] = [];
+
+
+
+                // (Getting the value)
+                $type_cast = self::$cached_models[ $model_class ]['type_cast'] ?? TypeCast::find( $model_class );
+
+
+
+                // (Getting the value)
+                self::$cached_models[ $model_class ]['type_cast'] = $type_cast;
+            }
+
 
 
             // (Getting the value)
-            $fields = self::$cached_fields[ $model_class ] ?? mysqli_fetch_fields( $this->mysqli_result );
+            $fields = self::$cached_models[ $model_class ]['fields'] ?? mysqli_fetch_fields( $this->mysqli_result );
 
             foreach ( $fields as $field )
             {// Processing each entry
@@ -269,10 +285,10 @@ class Cursor
 
 
 
-            if ( $this->model )
+            if ( $model_class )
             {// Value found
                 // (Getting the value)
-                self::$cached_fields[ $model_class ] = $fields;
+                self::$cached_models[ $model_class ]['fields'] = $fields;
             }
 
 
@@ -316,6 +332,36 @@ class Cursor
 
                     default:
                         // (Doing nothing)
+                }
+            }
+
+
+
+            foreach ( $record as $k => $v )
+            {// Processing each entry
+                // (Getting the value)
+                $cast = self::$cached_models[ $model_class ]['type_cast'][ $k ] ?? null;
+
+                if ( !$cast ) continue;
+
+
+
+                switch ( $cast )
+                {
+                    case 'int':
+                        // (Getting the value)
+                        $record[ $k ] = (int) $v;
+                    break;
+
+                    case 'float':
+                        // (Getting the value)
+                        $record[ $k ] = (float) $v;
+                    break;
+
+                    case 'bool':
+                        // (Getting the value)
+                        $record[ $k ] = $v === '1';
+                    break;
                 }
             }
         }
