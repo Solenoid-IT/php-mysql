@@ -269,7 +269,7 @@ class Cursor
 
 
                 // (Getting the value)
-                self::$cached_models[ $model_class ]['type_cast'] = $type_cast;
+                self::$cached_models[ $model_class ]['type_cast'] = $type_cast->fields;
             }
 
 
