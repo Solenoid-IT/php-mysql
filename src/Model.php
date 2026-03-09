@@ -708,7 +708,7 @@ class Model
     public function find (array $fields = [], bool $exclude_fields = false) : Record|null
     {
         // (Getting the value)
-        $record = $this->build_query( $fields, $exclude_fields )->run()->head();
+        $record = $this->build_query( $fields, $exclude_fields )->run()->set_model( $this )->head();
 
         if ( !$record || !$this->links )
         {// Match failed
@@ -728,7 +728,7 @@ class Model
     public function list (array $fields = [], bool $exclude_fields = false) : array
     {
         // (Getting the value)
-        $records = $this->build_query( $fields, $exclude_fields )->run()->list();
+        $records = $this->build_query( $fields, $exclude_fields )->run()->set_model( $this )->list();
 
         if ( !$records || !$this->links )
         {// Match failed
