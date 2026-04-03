@@ -265,6 +265,7 @@ class Model
                         $remote_records[ $fk_value ][] = $related_record;       
                     break;
 
+                    case Relation::HAS_ONE:
                     case Relation::BELONGS_TO:
                         // (Getting the value)
                         $remote_records[ $fk_value ] = $related_record;

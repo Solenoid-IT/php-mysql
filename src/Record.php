@@ -73,7 +73,13 @@ class Record extends \stdClass
         return $current;
     }
 
-    public function set_relation (string $name, array|self $value) : self
+    /**
+     * Sets the relation value for the given name.
+     * @param string $name The name of the relation.
+     * @param self[]|self|null $value The value to set for the relation. It can be an array of self, an instance of self, or null.
+     * @return self Returns the current instance of the Record class after setting the relation value.
+     */
+    public function set_relation (string $name, array|self|null $value) : self
     {
         // (Getting the value)
         $this->relations->{ $name } = $value;
