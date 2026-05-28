@@ -1,0 +1,18 @@
+<?php
+
+
+
+namespace App\Models;
+
+
+
+use \Solenoid\MySQL\Model;
+
+
+
+class User extends Model
+{
+    public string $connection_id = 'local';
+    public string $database      = 'db';
+    public string $table         = 'user';
+}
