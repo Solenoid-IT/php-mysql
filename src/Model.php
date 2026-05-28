@@ -51,7 +51,7 @@ class Model
 
 
         // (Getting the value)
-        $query = $this->query()->condition( $condition );
+        $query = $this->query( 'T' )->condition( $condition );
 
         
 
@@ -207,7 +207,7 @@ class Model
             foreach ( $records as $record )
             {// Processing each entry
                 // (Getting the value)
-                $pk_value = $record->{ $relation->local_key };
+                $pk_value = $record->get( $relation->foreign_key );
 
                 if ( $pk_value )
                 {// Value found
@@ -231,12 +231,17 @@ class Model
 
 
             // (Getting the value)
-            $related_results = $related_model->where( $relation->foreign_key, 'IN', $primary_keys )->list( [ $relation->foreign_key, ...$fields ] );
+            $foreign_key = $this->resolve_fk( $relation );
 
 
 
             // (Getting the value)
-            $fk_field = in_array( $relation->foreign_key, $fields );
+            $related_results = $related_model->where( $foreign_key, 'IN', $primary_keys )->list( [ $foreign_key, ...$fields ] );
+
+
+
+            // (Getting the value)
+            $fk_field = in_array( $foreign_key, $fields );
 
 
 
@@ -246,14 +251,14 @@ class Model
             foreach ( $related_results as $related_record )
             {// Processing each entry
                 // (Getting the value)
-                $fk_value = $related_record->{ $relation->foreign_key };
+                $fk_value = $related_record->{ $foreign_key };
 
 
 
                 if ( !$fk_field )
                 {// (Fk field is not required)
                     // (Removing the element)
-                    unset( $related_record->{ $relation->foreign_key } );
+                    unset( $related_record->{ $foreign_key } );
                 }
 
 
@@ -278,7 +283,7 @@ class Model
             foreach ( $records as $record )
             {// Processing each entry
                 // (Getting the value)
-                $pk_value = $record->{ $relation->local_key };
+                $pk_value = $record->get( $relation->foreign_key );
 
                 // (Getting the value)
                 $related_data = $remote_records[ $pk_value ] ?? ( $relation->type === Relation::HAS_MANY ? [] : null );
@@ -292,6 +297,12 @@ class Model
 
         // Returning the value
         return $records;
+    }
+
+    private function resolve_fk (Relation $relation) : string
+    {
+        // Returning the value
+        return $relation->foreign_key;
     }
 
 
@@ -1106,7 +1117,18 @@ class Model
 
 
         // (Getting the value)
-        $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "`$relation->foreign_key` = $table_alias.`$relation->local_key`" )->and(); 
+        $foreign_key = $this->resolve_fk( $relation );
+
+        // (Getting the value)
+        $condition = $related_model->query( $table_alias )->condition_start()->where_raw( "$table_alias.`$foreign_key` = T.`$relation->local_key`" )->and(); 
+
+
+
+        // (Setting placeholder prefix)
+        $condition->set_placeholder_prefix( 'sq' . count( $this->rels ) . '_' . $table_alias . '_' );
+
+        // (Setting table alias)
+        $condition->set_table_alias( $table_alias );
 
 
 
@@ -1117,6 +1139,9 @@ class Model
 
         // (Getting the value)
         $sub_query = $condition->condition_end()->select_raw( '1' )->build( '' );
+
+        // (Merging the sub-query placeholders into the parent condition)
+        $this->condition->fill( $condition->values );
 
 
 

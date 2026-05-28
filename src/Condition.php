@@ -14,7 +14,10 @@ use \Solenoid\MySQL\Model;
 
 class Condition extends Code
 {
-    private string     $current_op;
+    private string  $current_op;
+
+    private string  $placeholder_prefix = '';
+    private ?string $table_alias = null;
 
 
 
@@ -27,7 +30,7 @@ class Condition extends Code
     private function get_placeholder () : string
     {
         // Returning the value
-        return 'cond_val_' . ( count( $this->values ) + 1 );
+        return $this->placeholder_prefix . 'cond_val_' . ( count( $this->values ) + 1 );
     }
 
 
@@ -58,6 +61,30 @@ class Condition extends Code
     {
         // (Getting the value)
         $this->model = $model;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+
+
+    public function set_placeholder_prefix (string $prefix) : self
+    {
+        // (Getting the value)
+        $this->placeholder_prefix = $prefix;
+
+
+
+        // Returning the value
+        return $this;
+    }
+
+    public function set_table_alias (string $alias) : self
+    {
+        // (Getting the value)
+        $this->table_alias = $alias;
 
 
 
@@ -106,6 +133,11 @@ class Condition extends Code
 
     public function where_field (string $column, ?string $table_alias = null) : self
     {
+        // (Getting the value)
+        $table_alias = $this->table_alias ?? $table_alias;
+
+
+
         // (Appending the value)
         $this->where_raw( ( $table_alias ? $this->connection->sanitize_text( $table_alias ) . '.' : '' ) . '`' . $this->connection->sanitize_text( str_replace( '`', '', $column) ) . '`' );
 

@@ -183,6 +183,10 @@ $user_model      = create_user_table( $connection );
 
 
 
+$connection->on( 'command', fn($data) => file_put_contents( __DIR__ . '/commands.sql', $data['command'] . "\n\n", FILE_APPEND ) );
+
+
+
 $records = $user_model
     ->where( 'id', '<=', 100 )
     ->and()

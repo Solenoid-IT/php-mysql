@@ -24,10 +24,23 @@ class Relation
         public string $name,
         public string $model,
         public string $type = self::HAS_MANY,
-        public string $local_key = 'id',
-        public string $foreign_key = 'id'
+        public ?string $local_key = null,
+        public ?string $foreign_key = null
     )
-    {}
+    {
+        if ( $type === self::BELONGS_TO )
+        {// Match OK
+            // (Getting the values)
+            $this->local_key   = $local_key ?? $this->name;
+            $this->foreign_key = $foreign_key ?? 'id';
+        }
+        else
+        {// Match failed
+            // (Getting the values)
+            $this->local_key   = $local_key ?? 'id';
+            $this->foreign_key = $foreign_key ?? $this->name;
+        }
+    }
 
 
 
