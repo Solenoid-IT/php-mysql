@@ -23,6 +23,8 @@ class Model
 
     private static ?ConnectionMap $connection_map = null;
 
+    private Schema $schema;
+
 
 
     public string     $connection_id;
@@ -335,6 +337,15 @@ class Model
 
         // (Resetting the model)
         $this->reset();
+
+
+
+        // (Getting the value)
+        $schema = ( new \ReflectionClass( $this ) )->getAttributes( Schema::class );
+        $schema = count( $schema ) === 1 ? $schema[0]->newInstance() : new Schema();
+
+        // (Getting the value)
+        $this->schema = $schema;
     }
 
 
@@ -1219,6 +1230,230 @@ class Model
 
         // Returning the value
         return new static( $props['connection_id'], $props['database'], $props['table'] );
+    }
+
+
+
+    /**
+     * Returns all ancestors of the current record using an iterative approach.
+     * @return array<Record>|null
+     */
+    public function ancestors (array $fields = []) : array|null
+    {
+        // (Getting the values)
+        $id_field     = $this->schema->id_field;
+        $parent_field = $this->schema->parent_field;
+
+
+
+        // (Setting the value)
+        $entries = [];
+
+
+
+        // (Getting the value)
+        $record = $this->find( [ $id_field, $parent_field, ...$fields ] );
+
+        if ( !$record )
+        {// (Record not found)
+            // Returning the value
+            return null;
+        }
+
+
+
+        // (Setting the values)
+        $visited = [];
+        $current = $record;
+
+
+
+        // (Setting the value)
+        $records_map = [];
+
+
+
+        // (Getting the value)
+        $records = ( new self( $this->connection, $this->database, $this->table ) )->list( [ $id_field, $parent_field, ...$fields ] );
+
+        foreach ( $records as $record )
+        {// Processing each entry
+            // (Getting the value)
+            $records_map[ $record->{ $id_field } ] = $record;
+        }
+
+
+
+        while ( $current )
+        {// Processing each entry
+            if ( isset( $visited[ $current->{ $id_field } ] ) ) break;
+
+
+
+            // (Setting the value)
+            $visited[ $current->{ $id_field } ] = true;
+
+
+
+            // (Appending the value)
+            $entries[] = $current;
+
+
+
+            if ( !$current->{ $parent_field } ) break;
+
+            if ( !isset( $records_map[ $current->{ $parent_field } ] ) ) break;
+
+
+
+            // (Getting the value)
+            $current = $records_map[ $current->{ $parent_field } ];
+        }
+
+
+
+        // (Reversing the array)
+        $entries = array_reverse( $entries );
+
+
+
+        // Returning the value
+        return $entries;
+    }
+
+    /**
+     * Returns all descendants of the current roots using a depth-first pre-order traversal.
+     *
+     * Algorithm:
+    * 1) Resolve root IDs from the current model condition.
+     * 2) Load all candidate records once and build a parent -> children map.
+     * 3) Visit each root recursively, appending each child before exploring its subtree.
+     * 4) Track visited IDs to prevent cycles/infinite loops.
+     *
+     * @return array<Record>
+     */
+    public function descendants (array $fields = []) : array
+    {
+        // (Getting the values)
+        $id_field     = $this->schema->id_field;
+        $parent_field = $this->schema->parent_field;
+
+
+
+        // (Setting the value)
+        $entries = [];
+
+
+
+        // (Getting the value)
+        $root_entries = $this->list( [ $id_field ] );
+
+
+
+        // (Getting the value)
+        $root_ids = array_map( fn ($root_entry) => $root_entry->{ $id_field }, $root_entries );
+
+        if ( !$root_ids ) return [];
+
+
+
+        // (Setting the value)
+        $children_map = [];
+
+        // (Setting the value)
+        $visited = null;
+
+
+
+        // (Getting the value)
+        $model = new self( $this->connection, $this->database, $this->table );
+
+        // (Getting the value)
+        $model->condition = $this->condition;
+
+
+
+        // (Getting the value)
+        $records = $model->list( [ $id_field, $parent_field, ...$fields ] );
+
+
+
+        foreach ( $records as $record )
+        {// Processing each entry
+            // (Getting the value)
+            $children_map[ $record->{ $parent_field } ?? 0 ][] = $record;
+        }
+
+
+
+        foreach ( $root_ids as $root_id )
+        {// Processing each entry
+            // (Visiting the descendants)
+            $this->visit( $root_id, $children_map, $entries, $visited );
+        }
+
+
+
+        // Returning the value
+        return $entries;
+    }
+
+
+
+    /**
+     * Recursive DFS visit used by descendants().
+     * Children are appended in pre-order; visited IDs avoid cycles.
+     *
+     * @param array<int, array<Record>> $children_map
+     * @param array<Record> $entries
+     * @param array<int, bool>|null $visited
+     */
+    private function visit (int|string $parent_id, array $children_map = [], array &$entries = [], ?array &$visited = null) : void
+    {
+        // (Getting the value)
+        $id_field = $this->schema->id_field;
+
+
+
+        if ( $visited === null )
+        {// Value not found
+            // (Setting the value)
+            $visited = [];
+
+            foreach ( $entries as $entry )
+            {// Processing each entry
+                if ( isset( $entry->{ $id_field } ) )
+                {// Value found
+                    // (Setting the value)
+                    $visited[ $entry->{ $id_field } ] = true;
+                }
+            }
+        }
+
+
+
+        // (Getting the value)
+        $children = $children_map[ $parent_id ] ?? [];
+
+        foreach ( $children as $child )
+        {// Processing each entry
+            if ( isset( $visited[ $child->{ $id_field } ] ) ) continue;
+
+
+
+            // (Appending the value)
+            $entries[] = $child;
+
+
+
+            // (Setting the value)
+            $visited[ $child->{ $id_field } ] = true;
+
+
+
+            // (Visiting the descendants)
+            $this->visit( $child->{ $id_field }, $children_map, $entries, $visited );
+        }
     }
 
 
